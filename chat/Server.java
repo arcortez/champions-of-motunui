@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.Socket;
 import java.net.ServerSocket;
 
-public class GreetingServer {
+public class Server {
 
   private static ServerSocket serverSocket = null;
   private static Socket clientSocket = null;
