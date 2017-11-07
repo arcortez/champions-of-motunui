@@ -15,7 +15,7 @@ public class Server {
     int portNumber = 2222;
     if (args.length < 1) {
       System.out
-          .println("Usage: javac Server <portNumber>\n" + "Now using port number=" + portNumber);
+          .println("Usage: java Server <portNumber>\n" + "Now using port number=" + portNumber);
     } else {
       portNumber = Integer.valueOf(args[0]).intValue();
     }
@@ -79,7 +79,7 @@ class clientThread extends Thread {
       in = new BufferedReader(new
       InputStreamReader(clientSocket.getInputStream()));
       os = new PrintStream(clientSocket.getOutputStream());
-      os.print("Enter your name: ");
+      os.println("Enter your name: ");
       String name = in.readLine().trim();
       os.println("Hello " + name + "! \nTo leave enter /quit in a new line");
       for (int i = 0; i < maxClientsCount; i++) {
@@ -94,14 +94,13 @@ class clientThread extends Thread {
         }
         for (int i = 0; i < maxClientsCount; i++) {
           if (threads[i] != null) {
-            threads[i].os.println(name + " : " + line);
+            threads[i].os.println(name + ": " + line);
           }
         }
       }
       for (int i = 0; i < maxClientsCount; i++) {
         if (threads[i] != null && threads[i] != this) {
-          threads[i].os.println("*** The user " + name
-              + " is leaving the chat room !!! ***");
+          threads[i].os.println(name + " is leaving the chat room.");
         }
       }
       os.println("*** Bye " + name + " ***");
