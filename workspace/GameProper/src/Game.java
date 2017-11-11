@@ -9,7 +9,7 @@ public class Game extends BasicGame{
 	}
 	
 	public void render(GameContainer gc, Graphics g) throws SlickException {
-		g.drawOval(10,10,20,20);
+		g.drawOval(100,100,20,20);
 	}
 	
 	@Override
