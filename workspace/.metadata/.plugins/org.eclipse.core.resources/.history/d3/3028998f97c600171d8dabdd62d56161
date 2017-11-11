@@ -1,0 +1,7 @@
+import org.newdawn.slick.BasicGame;
+
+public class Game extends BasicGame{
+	public Game(){
+		super("Game");
+	}
+}
