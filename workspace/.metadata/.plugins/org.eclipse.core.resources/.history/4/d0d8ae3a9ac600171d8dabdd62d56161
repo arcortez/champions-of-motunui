@@ -8,17 +8,17 @@ public class Game extends BasicGame{
 		super("Game");
 	}
 	
-	public void render(GameContainer gc, Graphics g) throws SlickException {
-		g.drawOval(10,10,20,20);
+	public void render(GameContainer arg0, Graphics arg1) throws SlickException {
+		g.drawOval(100,100,200,200)
 	}
 	
 	@Override
-	public void init(GameContainer gc) throws SlickException {
+	public void init(GameContainer arg0) throws SlickException {
 		
 	}
 	
 	@Override
-	public void update(GameContainer gc, int x) throws SlickException {
+	public void update(GameContainer arg0, int arg1) throws SlickException {
 		
 	}
 }

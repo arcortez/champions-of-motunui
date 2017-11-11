@@ -13,12 +13,12 @@ public class Game extends BasicGame{
 	}
 	
 	@Override
-	public void init(GameContainer gc) throws SlickException {
+	public void init(GameContainer arg0) throws SlickException {
 		
 	}
 	
 	@Override
-	public void update(GameContainer gc, int x) throws SlickException {
+	public void update(GameContainer arg0, int arg1) throws SlickException {
 		
 	}
 }
