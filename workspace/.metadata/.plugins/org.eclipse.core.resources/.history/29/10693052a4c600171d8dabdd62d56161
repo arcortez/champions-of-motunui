@@ -21,23 +21,24 @@ public class Main {
 		//insert client and server things here
 		
 		JFrame frame = new JFrame("Champions of Motunui");
-		frame.setPreferredSize(new Dimension(900, 700));
+		frame.setPreferredSize(new Dimension(600, 400));
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		
-		Container c = frame.getContentPane();//container
+		Container c = frame.getContentPane();
 		c.setLayout(new BorderLayout());
 
 		JPanel north = new JPanel();
 
-		JButton homebutton = new JButton("Home");	//for buttons
 		JButton gamebutton = new JButton("Game");	
 		JButton highbutton = new JButton("High Scores");
+		
 		north.add(homebutton);
 		north.add(gamebutton);
 		north.add(highbutton);
 		north.setBackground(Color.GRAY);	
 
+		c.add(north, BorderLayout.NORTH);
 		frame.pack();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		

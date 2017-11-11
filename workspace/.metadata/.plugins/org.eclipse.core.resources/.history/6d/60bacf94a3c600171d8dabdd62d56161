@@ -21,7 +21,7 @@ public class Main {
 		//insert client and server things here
 		
 		JFrame frame = new JFrame("Champions of Motunui");
-		frame.setPreferredSize(new Dimension(900, 700));
+		frame.setSize(900, 700);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		
@@ -38,6 +38,7 @@ public class Main {
 		north.add(highbutton);
 		north.setBackground(Color.GRAY);	
 
+		c.add(north, BorderLayout.NORTH);
 		frame.pack();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		

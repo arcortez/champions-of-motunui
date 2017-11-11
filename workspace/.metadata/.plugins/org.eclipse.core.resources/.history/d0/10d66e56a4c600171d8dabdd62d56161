@@ -38,6 +38,7 @@ public class Main {
 		north.add(highbutton);
 		north.setBackground(Color.GRAY);	
 
+		c.add
 		frame.pack();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
