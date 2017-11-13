@@ -109,9 +109,22 @@ public class Client implements Runnable{
 
 
 		JPanel gameProper = new JPanel();
-		JLabel keystrokes = new JLabel();
+		JLabel keystrokes = new JLabel("press a key.");
 
-		keystrokes.
+		keystrokes.requestFocus();
+		keystrokes.addKeyListener(new KeyListener(){
+			public void keyPressed(KeyEvent ke) {}
+			public void keyTyped(KeyEvent ke) {
+				if(ke.getChar() == "q"){
+					keystrokes.setText("left");
+				}else if(ke.getChar() == "p"){
+					keystrokes.setText("right");
+				}else if(ke.getChar() == " "){
+					keystrokes.setText("FIRE");
+				}
+			}
+			public void keyReleased(KeyEvent ke) {}
+		});
 
 		gameScreen.add(infoBox, BorderLayout.SOUTH);
 
