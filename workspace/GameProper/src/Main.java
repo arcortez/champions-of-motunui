@@ -20,27 +20,29 @@ public class Main {
 		
 		//insert client and server things here
 		
-		JFrame frame = new JFrame("Champions of Motunui");
-		frame.setPreferredSize(new Dimension(900, 700));
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
 		
-		Container c = frame.getContentPane();//container
-		c.setLayout(new BorderLayout());
-
-		JPanel north = new JPanel();
-
-		JButton homebutton = new JButton("Home");	//for buttons
-		JButton gamebutton = new JButton("Game");	
-		JButton highbutton = new JButton("High Scores");
-		north.add(homebutton);
-		north.add(gamebutton);
-		north.add(highbutton);
-		north.setBackground(Color.GRAY);	
-
-		frame.pack();
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
+//		JFrame frame = new JFrame("Champions of Motunui");
+//		frame.setPreferredSize(new Dimension(900, 700));
+//		frame.setLocationRelativeTo(null);
+//		frame.setVisible(true);
+//		
+//		Container c = frame.getContentPane();//container
+//		c.setLayout(new BorderLayout());
+//
+//		JPanel north = new JPanel();
+//
+//		JButton homebutton = new JButton("Home");	//for buttons
+//		JButton gamebutton = new JButton("Game");	
+//		JButton highbutton = new JButton("High Scores");
+//		north.add(homebutton);
+//		north.add(gamebutton);
+//		north.add(highbutton);
+//		north.setBackground(Color.GRAY);	
+//
+//		frame.pack();
+//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		
 //		try{
 //			Game game = new Game();
 //			AppGameContainer app = new AppGameContainer(game);
