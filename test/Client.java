@@ -132,15 +132,15 @@ public class Client implements Runnable{
 				try{
 					if(ke.getKeyChar() == KeyEvent.VK_1){
 						keystrokes.setText(keystrokes.getText() + "\n"+name+" left");
-						out.writeUTF("game " + name + " left");
+						out.writeUTF("game." + name + ".left");
 
 					}else if(ke.getKeyChar() == KeyEvent.VK_0){
 						keystrokes.setText(keystrokes.getText() + "  \n"+name+" right");
-						out.writeUTF("game " + name + " right");
+						out.writeUTF("game." + name + ".right");
 
 					}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
 						keystrokes.setText(keystrokes.getText() + "  \n"+name+" FIRE");
-						out.writeUTF("game " + name + " FIRE");
+						out.writeUTF("game." + name + ".FIRE");
 
 					}
 				}catch(IOException e){
@@ -161,7 +161,7 @@ public class Client implements Runnable{
 				if(message.getText() != "" || message.getText() != null){
 					textarea.setText(textarea.getText()+"\n"+name+": "+message.getText());
 					try{
-						out.writeUTF("chat " + name + " " + message.getText());
+						out.writeUTF("chat." + name + "." + message.getText());
 					}catch(IOException er){
 						er.printStackTrace();
 					}

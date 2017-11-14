@@ -47,12 +47,13 @@ public class Server extends Thread{
 						if(clients[i] != null){
 							try{
 								in = new DataInputStream(clients[i].getInputStream());
-		            			System.out.println(in.readUTF()); 	
+								String msg = in.readUTF();
+		            			System.out.println(msg); 	
 		            			for(int j=0;j<maxPlayers;j++){
-									if(clients[i] != null){
-										out = new DataOutputStream(clients[i].getOutputStream());
-										out.writeUTF(in.readUTF());
-									}
+									if(clients[j] != null){
+										out = new DataOutputStream(clients[j].getOutputStream());
+										out.writeUTF(msg);
+									}	
 								}
 							}catch(IOException e){
 								e.printStackTrace();
