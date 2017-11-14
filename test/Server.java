@@ -5,7 +5,6 @@ public class Server extends Thread{
 	private ServerSocket serverSocket;
 	private Socket[] clients;
 	private int maxPlayers = 0;
-	static String playerData;
     static DatagramSocket serverDataSocket = null;
     static final int WAITING_FOR_PLAYERS = 1;
     static final int GAME_START = 2;
@@ -22,17 +21,14 @@ public class Server extends Thread{
 		boolean connected = true;
 		int playerCount = 0;
 		int stage = WAITING_FOR_PLAYERS;
+		String playerData;
 		while(true){
-			byte[] buf = new byte[256];
-			DatagramPacket packet = new DatagramPacket(buf, buf.length);
-			try{
-     			serverDataSocket.receive(packet);
-			}catch(Exception ioe){}
-			playerData = new String(buf);
-			playerData = playerData.trim();
+
+			
 
 			switch(stage){
 				case WAITING_FOR_PLAYERS:
+					System.out.println("WAITING_FOR_PLAYERS");
 					try{
 						clients[playerCount] = serverSocket.accept();
 						System.out.println("Just connected to player on "+clients[playerCount].getRemoteSocketAddress());
@@ -42,6 +38,23 @@ public class Server extends Thread{
 		                System.out.println("Input/Output Error!");
 		                break;
 		            }
+		            if(playerCount >= maxPlayers){
+		            	stage = GAME_START;
+		            }
+					break;
+				case GAME_START:
+					System.out.println("GAME HAS STARTED.");
+					for(int i=0;i<maxPlayers;i++){
+						if(clients[i] != null){
+							try{
+								DataInputStream in = new DataInputStream(clients[i].getInputStream());
+		            			System.out.println(in.readUTF()); 	
+							}catch(IOException e){
+								e.printStackTrace();
+							}
+						}
+					}
+
 					break;
 			}
 			

@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+
 public class Client implements Runnable{
 	private boolean connected;
 	private static JPanel screenDeck = new JPanel(new CardLayout());
@@ -11,6 +12,7 @@ public class Client implements Runnable{
 	static Thread t;
 	static DatagramSocket socket;
 	private static Socket serverSocket;
+	private static DataOutputStream out;
 
 	public Client(String serverIP, int port, String name){
 		try{
@@ -18,6 +20,10 @@ public class Client implements Runnable{
 			serverSocket = new Socket(serverIP, port);
 
 			System.out.println("Just connected to " + serverSocket.getRemoteSocketAddress());
+
+			OutputStream outToServer = serverSocket.getOutputStream();
+            out = new DataOutputStream(outToServer);
+            
 		}catch(SocketException e){
 			e.printStackTrace();
 			System.exit(1);
@@ -60,8 +66,8 @@ public class Client implements Runnable{
 
 		tutorialScreen.add(new JLabel("insert tutorial here"), BorderLayout.CENTER);
 		tutorialScreen.add(southTutorial, BorderLayout.SOUTH);
-		screenDeck.add(tutorialScreen, "TUTORIAL");
 		screenDeck.add(gameScreen, "GAME");
+		screenDeck.add(tutorialScreen, "TUTORIAL");
 		
 		gameScreen.setLayout(new BorderLayout());
 		
@@ -94,10 +100,13 @@ public class Client implements Runnable{
 		JPanel info = new JPanel();
 		info.setLayout(new BorderLayout());
 		JPanel lifePanel = new JPanel();
+		JButton focus = new JButton("FOCUS!");
+		
 		lifePanel.add(new JLabel("Lives left:"), BorderLayout.WEST);
 		JTextField lives = new JTextField("3");
 		lives.setEditable(false);
-		lifePanel.add(lives, BorderLayout.EAST);
+		lifePanel.add(lives, BorderLayout.CENTER);
+		lifePanel.add(focus, BorderLayout.EAST);
 		info.add(lifePanel, BorderLayout.NORTH);
 
 		JTextArea leaderboard = new JTextArea("LEADERBOARD:");
@@ -109,31 +118,59 @@ public class Client implements Runnable{
 
 
 		JPanel gameProper = new JPanel();
-		JLabel keystrokes = new JLabel("press a key.");
+
+		JTextArea keystrokes = new JTextArea("press a key.");
+		keystrokes.setEditable(false);
+		JScrollPane pane1 = new JScrollPane(keystrokes);
+		pane1.setPreferredSize(new Dimension(900, 520));
 
 		keystrokes.requestFocus();
 		keystrokes.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent ke) {}
 			public void keyTyped(KeyEvent ke) {
-				if(ke.getChar() == "q"){
-					keystrokes.setText("left");
-				}else if(ke.getChar() == "p"){
-					keystrokes.setText("right");
-				}else if(ke.getChar() == " "){
-					keystrokes.setText("FIRE");
+				try{
+					if(ke.getKeyChar() == KeyEvent.VK_1){
+						keystrokes.setText(keystrokes.getText() + "\n"+name+" left");
+						out.writeUTF("game " + name + " left");
+
+					}else if(ke.getKeyChar() == KeyEvent.VK_0){
+						keystrokes.setText(keystrokes.getText() + "  \n"+name+" right");
+						out.writeUTF("game " + name + " right");
+
+					}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
+						keystrokes.setText(keystrokes.getText() + "  \n"+name+" FIRE");
+						out.writeUTF("game " + name + " FIRE");
+
+					}
+				}catch(IOException e){
+					e.printStackTrace();
 				}
 			}
 			public void keyReleased(KeyEvent ke) {}
 		});
 
+		gameScreen.add(pane1, BorderLayout.NORTH);
 		gameScreen.add(infoBox, BorderLayout.SOUTH);
+
 
 		c.add(screenDeck);
 
 		sendButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				textarea.setText(textarea.getText()+"\n"+name+": "+message.getText());
+				try{
+					out.writeUTF("chat " + name + " " + message.getText());
+				}catch(IOException e){
+					e.printStackTrace();
+				}
 				message.setText("");
+				keystrokes.requestFocus();
+			}
+		});
+
+		focus.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				keystrokes.requestFocus();
 			}
 		});
 
@@ -173,6 +210,9 @@ public class Client implements Runnable{
 		}catch(IOException e){
 
 		}
-		
+	}
+
+	public void update(String msg){
+
 	}
 }
