@@ -9,6 +9,8 @@ public class Server extends Thread{
     static final int WAITING_FOR_PLAYERS = 1;
     static final int GAME_START = 2;
     static final int ONGOING = 3;	
+    private static DataInputStream in;
+    private static DataOutputStream out;
 
 	public Server(int port, int num) throws IOException{
 		serverSocket = new ServerSocket(port);
@@ -23,9 +25,6 @@ public class Server extends Thread{
 		int stage = WAITING_FOR_PLAYERS;
 		String playerData;
 		while(true){
-
-			
-
 			switch(stage){
 				case WAITING_FOR_PLAYERS:
 					System.out.println("WAITING_FOR_PLAYERS");
@@ -40,15 +39,21 @@ public class Server extends Thread{
 		            }
 		            if(playerCount >= maxPlayers){
 		            	stage = GAME_START;
+		            	System.out.println("GAME HAS STARTED.");
 		            }
 					break;
 				case GAME_START:
-					System.out.println("GAME HAS STARTED.");
 					for(int i=0;i<maxPlayers;i++){
 						if(clients[i] != null){
 							try{
-								DataInputStream in = new DataInputStream(clients[i].getInputStream());
+								in = new DataInputStream(clients[i].getInputStream());
 		            			System.out.println(in.readUTF()); 	
+		            			for(int j=0;j<maxPlayers;j++){
+									if(clients[i] != null){
+										out = new DataOutputStream(clients[i].getOutputStream());
+										out.writeUTF(in.readUTF());
+									}
+								}
 							}catch(IOException e){
 								e.printStackTrace();
 							}

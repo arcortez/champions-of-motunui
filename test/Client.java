@@ -13,6 +13,7 @@ public class Client implements Runnable{
 	static DatagramSocket socket;
 	private static Socket serverSocket;
 	private static DataOutputStream out;
+	private static DataInputStream in;
 
 	public Client(String serverIP, int port, String name){
 		try{
@@ -157,13 +158,15 @@ public class Client implements Runnable{
 
 		sendButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
-				textarea.setText(textarea.getText()+"\n"+name+": "+message.getText());
-				try{
-					out.writeUTF("chat " + name + " " + message.getText());
-				}catch(IOException e){
-					e.printStackTrace();
+				if(message.getText() != "" || message.getText() != null){
+					textarea.setText(textarea.getText()+"\n"+name+": "+message.getText());
+					try{
+						out.writeUTF("chat " + name + " " + message.getText());
+					}catch(IOException er){
+						er.printStackTrace();
+					}
+					message.setText("");
 				}
-				message.setText("");
 				keystrokes.requestFocus();
 			}
 		});
@@ -203,7 +206,13 @@ public class Client implements Runnable{
 	public void run(){
 		connected = true;
 		while(connected){
-
+			try{
+				InputStream inFromServer = serverSocket.getInputStream();
+	            DataInputStream in = new DataInputStream(inFromServer);
+	            System.out.println(in.readUTF());
+			}catch(IOException er){
+				er.printStackTrace();
+			}
 		}
 		try{
 			serverSocket.close();	
