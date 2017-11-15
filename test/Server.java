@@ -34,6 +34,7 @@ public class Server extends Thread{
 						clients[playerCount] = serverSocket.accept();
 						in = new DataInputStream(clients[playerCount].getInputStream());
 						System.out.println("Just connected to player [" + in.readUTF() + "] on "+clients[playerCount].getRemoteSocketAddress());
+						
 						playerCount++;
 					}catch(IOException e){
 		                e.printStackTrace();
@@ -60,8 +61,11 @@ public class Server extends Thread{
 										out.writeUTF(msg);
 									}	
 								}
+							}catch(SocketException e){
+								System.exit(1);
 							}catch(IOException e){
 								e.printStackTrace();
+								System.exit(1);
 							}
 						}
 					}

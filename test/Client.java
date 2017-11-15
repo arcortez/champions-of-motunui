@@ -3,7 +3,7 @@ import java.io.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-
+import javax.imageio.ImageIO;
 
 public class Client implements Runnable{
 	private boolean connected;
@@ -11,6 +11,7 @@ public class Client implements Runnable{
 	private static JFrame frame;
 	static Thread t;
 	static DatagramSocket socket;
+	static JLabel label;
 	private static Socket serverSocket;
 	private static DataOutputStream out;
 	private static DataInputStream in;
@@ -63,7 +64,7 @@ public class Client implements Runnable{
 		skipTutorial.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				CardLayout p = (CardLayout)screenDeck.getLayout();
-				p.show(screenDeck, "GAME");
+				p.show(screenDeck, "JButton");
 
 			}
 		});
@@ -130,6 +131,7 @@ public class Client implements Runnable{
 		JPanel gameProper = new JPanel();
 
 		movementBox = new OverlaidField();
+
 		movementBox.setPreferredSize(new Dimension(900, 520));
 		Player player1 = new Player(450, 20,1);
 		movementBox.add(player1);
@@ -244,6 +246,9 @@ public class Client implements Runnable{
 	            	leaderboard.setText(leaderboard.getText()+"\n"+tokens[1]+" "+tokens[2]);
 	            }
 
+			}catch(SocketException e){
+				e.printStackTrace();
+				System.exit(1);
 			}catch(IOException er){
 				er.printStackTrace();
 			}

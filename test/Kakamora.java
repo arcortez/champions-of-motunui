@@ -69,4 +69,6 @@ public class Kakamora extends JPanel implements Runnable{
 	 	if(ypos <= 800)
 	 		this.ypos += 20;
 	 }
+
+	 
 }

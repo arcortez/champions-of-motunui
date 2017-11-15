@@ -31,6 +31,8 @@ public class Player extends JPanel implements Runnable{
 				this.repaint();
 				Thread.sleep(5);
 			} catch(Exception e) { 
+				e.printStackTrace();
+				System.exit(1);
 			}
 		}
 	}
