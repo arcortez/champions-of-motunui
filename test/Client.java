@@ -14,6 +14,12 @@ public class Client implements Runnable{
 	private static Socket serverSocket;
 	private static DataOutputStream out;
 	private static DataInputStream in;
+	private static JTextArea keystrokes;
+	private static JTextArea textarea;
+	private static JTextArea leaderboard;
+	private static OverlaidField movementBox;
+
+	static int playerID;
 
 	public Client(String serverIP, int port, String name){
 		try{
@@ -24,7 +30,9 @@ public class Client implements Runnable{
 
 			OutputStream outToServer = serverSocket.getOutputStream();
             out = new DataOutputStream(outToServer);
-            
+            out.writeUTF(name);
+
+
 		}catch(SocketException e){
 			e.printStackTrace();
 			System.exit(1);
@@ -56,6 +64,7 @@ public class Client implements Runnable{
 			public void actionPerformed(ActionEvent e){
 				CardLayout p = (CardLayout)screenDeck.getLayout();
 				p.show(screenDeck, "GAME");
+
 			}
 		});
 
@@ -69,7 +78,6 @@ public class Client implements Runnable{
 		tutorialScreen.add(southTutorial, BorderLayout.SOUTH);
 		screenDeck.add(gameScreen, "GAME");
 		screenDeck.add(tutorialScreen, "TUTORIAL");
-		
 		gameScreen.setLayout(new BorderLayout());
 		
 
@@ -77,7 +85,7 @@ public class Client implements Runnable{
 		infoBox.setLayout(new BorderLayout());
 		JPanel chatBox = new JPanel();
 		chatBox.setLayout(new BorderLayout());
-		JTextArea textarea = new JTextArea("WELCOME TO THE CHAT ROOM!\n");
+		textarea = new JTextArea("WELCOME TO THE CHAT ROOM!\n");
 		textarea.setEditable(false);
 		
 		JScrollPane pane = new JScrollPane(textarea);
@@ -110,38 +118,51 @@ public class Client implements Runnable{
 		lifePanel.add(focus, BorderLayout.EAST);
 		info.add(lifePanel, BorderLayout.NORTH);
 
-		JTextArea leaderboard = new JTextArea("LEADERBOARD:");
-		leaderboard.setPreferredSize(new Dimension(445, 100));
+		leaderboard = new JTextArea("LEADERBOARD:");
+		JScrollPane leadScroll = new JScrollPane(leaderboard);
+		leadScroll.setPreferredSize(new Dimension(445, 100));
 		leaderboard.setEditable(false);
-		info.add(leaderboard, BorderLayout.SOUTH);
+		info.add(leadScroll, BorderLayout.SOUTH);
 
 		infoBox.add(info, BorderLayout.EAST);
 
 
 		JPanel gameProper = new JPanel();
 
-		JTextArea keystrokes = new JTextArea("press a key.");
-		keystrokes.setEditable(false);
-		JScrollPane pane1 = new JScrollPane(keystrokes);
-		pane1.setPreferredSize(new Dimension(900, 520));
+		movementBox = new OverlaidField();
+		movementBox.setPreferredSize(new Dimension(900, 520));
+		Player player1 = new Player(450, 20,1);
+		movementBox.add(player1);
+		Arrow parrow = new Arrow(-900,-900, true);
+		movementBox.add(parrow);
+		Kakamora[] kaks = new Kakamora[20];
+		for(int k=0;k<20;k++){
+			kaks[k] = new Kakamora(50,40*k, 1);
+			movementBox.add(kaks[k]);
+			Thread y = new Thread(kaks[k]);
+			y.start();
+		}
+		for(int l=0;l<20;l++){
+			Kakamora kak = new Kakamora(0,50*l, 1);
+			movementBox.add(kak);
+			Thread y = new Thread(kak);
+			y.start();
+		}
 
-		keystrokes.requestFocus();
-		keystrokes.addKeyListener(new KeyListener(){
+		leaderboard.requestFocus();
+		leaderboard.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent ke) {}
 			public void keyTyped(KeyEvent ke) {
 				try{
 					if(ke.getKeyChar() == KeyEvent.VK_1){
-						keystrokes.setText(keystrokes.getText() + "\n"+name+" left");
-						out.writeUTF("game." + name + ".left");
-
+						out.writeUTF("game~" + name + "~left");
+						player1.moveLeft();
 					}else if(ke.getKeyChar() == KeyEvent.VK_0){
-						keystrokes.setText(keystrokes.getText() + "  \n"+name+" right");
-						out.writeUTF("game." + name + ".right");
-
+						out.writeUTF("game~" + name + "~right");
+						player1.moveRight();
 					}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
-						keystrokes.setText(keystrokes.getText() + "  \n"+name+" FIRE");
-						out.writeUTF("game." + name + ".FIRE");
-
+						out.writeUTF("game~" + name + "~FIRE");
+						parrow.setpos(player1.ypos,player1.xpos);
 					}
 				}catch(IOException e){
 					e.printStackTrace();
@@ -150,8 +171,11 @@ public class Client implements Runnable{
 			public void keyReleased(KeyEvent ke) {}
 		});
 
-		gameScreen.add(pane1, BorderLayout.NORTH);
+
+		gameScreen.add(movementBox, BorderLayout.NORTH);
 		gameScreen.add(infoBox, BorderLayout.SOUTH);
+
+
 
 
 		c.add(screenDeck);
@@ -159,21 +183,20 @@ public class Client implements Runnable{
 		sendButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				if(message.getText() != "" || message.getText() != null){
-					textarea.setText(textarea.getText()+"\n"+name+": "+message.getText());
 					try{
-						out.writeUTF("chat." + name + "." + message.getText());
+						out.writeUTF("chat~" + name + "~" + message.getText());
 					}catch(IOException er){
 						er.printStackTrace();
 					}
 					message.setText("");
 				}
-				keystrokes.requestFocus();
+				leaderboard.requestFocus();
 			}
 		});
 
 		focus.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
-				keystrokes.requestFocus();
+				leaderboard.requestFocus();
 			}
 		});
 
@@ -209,7 +232,18 @@ public class Client implements Runnable{
 			try{
 				InputStream inFromServer = serverSocket.getInputStream();
 	            DataInputStream in = new DataInputStream(inFromServer);
-	            System.out.println(in.readUTF());
+	            String msg = in.readUTF();
+
+	            System.out.println(msg);
+
+	            String[] tokens = msg.split("~");
+
+	            if(tokens[0].equals("chat")){
+	            	textarea.setText(textarea.getText() +"\n"+ tokens[1] + ": " + tokens[2]);
+	            }else if(tokens[0].equals("game")){
+	            	leaderboard.setText(leaderboard.getText()+"\n"+tokens[1]+" "+tokens[2]);
+	            }
+
 			}catch(IOException er){
 				er.printStackTrace();
 			}
@@ -221,7 +255,4 @@ public class Client implements Runnable{
 		}
 	}
 
-	public void update(String msg){
-
-	}
 }

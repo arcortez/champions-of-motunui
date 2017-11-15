@@ -11,11 +11,13 @@ public class Server extends Thread{
     static final int ONGOING = 3;	
     private static DataInputStream in;
     private static DataOutputStream out;
+    private static boolean[] ready;
 
 	public Server(int port, int num) throws IOException{
 		serverSocket = new ServerSocket(port);
 		this.maxPlayers = num;
 		clients = new Socket[num];
+		ready = new boolean[num];
 		System.out.println("Server is running at port "+port+"...");
 	}
 
@@ -30,7 +32,8 @@ public class Server extends Thread{
 					System.out.println("WAITING_FOR_PLAYERS");
 					try{
 						clients[playerCount] = serverSocket.accept();
-						System.out.println("Just connected to player on "+clients[playerCount].getRemoteSocketAddress());
+						in = new DataInputStream(clients[playerCount].getInputStream());
+						System.out.println("Just connected to player [" + in.readUTF() + "] on "+clients[playerCount].getRemoteSocketAddress());
 						playerCount++;
 					}catch(IOException e){
 		                e.printStackTrace();
@@ -41,6 +44,8 @@ public class Server extends Thread{
 		            	stage = GAME_START;
 		            	System.out.println("GAME HAS STARTED.");
 		            }
+
+
 					break;
 				case GAME_START:
 					for(int i=0;i<maxPlayers;i++){
