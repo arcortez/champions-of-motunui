@@ -2,13 +2,18 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import javax.swing.*;
 import java.io.*;
+import java.net.InetAddress;
 import java.awt.image.BufferedImage;
 
 public class Player extends JPanel implements Runnable{
-	int xpos;
-	int ypos;
+	private int xpos;
+	private int ypos;
 	int playerid;
 	BufferedImage image;
+
+	private InetAddress address;
+	private int port;
+
 
 	public Player(int initx, int inity, int playerid){
 		this.xpos = initx;
@@ -46,8 +51,38 @@ public class Player extends JPanel implements Runnable{
 		if(ypos >= 5)
 			this.ypos -= 20;
 	}	
-	 public void moveRight(){
+	
+	public void moveRight(){
 	 	if(ypos <= 800)
 	 		this.ypos += 20;
-	 }
+	}
+
+	public void setXpos(int x){
+		this.xpos = x;
+	}
+
+	public void setYpos(int y){
+		this.ypos = y;
+	}
+
+	public int getXpos(){
+		return xpos;
+	}
+
+	public int getYpos(){
+		return ypos;
+	}
+
+	public InetAddress getAddress(){
+		return address;
+	}
+
+	public int getPort(){
+		return port;
+	}
+
+	public String getInfo(){
+		String info="MOVE " + playerid + " " + xpos + " " + ypos;
+		return info;
+	}
 }

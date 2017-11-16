@@ -20,11 +20,22 @@ public class Client implements Runnable{
 	private static JTextArea leaderboard;
 	private static OverlaidField movementBox;
 
+
+	//
+	String serverIP;
+	int port;
+	String name;
+
+
 	static int playerID;
+	Player player1;
 
 	public Client(String serverIP, int port, String name){
 		try{
 			socket = new DatagramSocket();		
+			this.serverIP = serverIP;
+			this.port = port;
+			this.name = name;
 			serverSocket = new Socket(serverIP, port);
 
 			System.out.println("Just connected to " + serverSocket.getRemoteSocketAddress());
@@ -133,7 +144,7 @@ public class Client implements Runnable{
 		movementBox = new OverlaidField();
 
 		movementBox.setPreferredSize(new Dimension(900, 520));
-		Player player1 = new Player(450, 20,1);
+		player1 = new Player(450, 20,1);
 		movementBox.add(player1);
 		Arrow parrow = new Arrow(-900,-900, true);
 		movementBox.add(parrow);
@@ -159,12 +170,16 @@ public class Client implements Runnable{
 					if(ke.getKeyChar() == KeyEvent.VK_1){
 						out.writeUTF("game~" + name + "~left");
 						player1.moveLeft();
+						send("MOVE " + name + " " + player1.getXpos() + " " + player1.getYpos());
 					}else if(ke.getKeyChar() == KeyEvent.VK_0){
 						out.writeUTF("game~" + name + "~right");
 						player1.moveRight();
+						send("MOVE " + name + " " + player1.getXpos() + " " + player1.getYpos());
 					}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
 						out.writeUTF("game~" + name + "~FIRE");
-						parrow.setpos(player1.ypos,player1.xpos);
+						parrow.setpos(player1.getYpos(),player1.getXpos());
+
+						//send move data
 					}
 				}catch(IOException e){
 					e.printStackTrace();
@@ -211,6 +226,20 @@ public class Client implements Runnable{
 
 	}
 
+	//
+	public void send(String msg){
+		try{
+			byte[] buf = msg.getBytes();
+			InetAddress address = InetAddress.getByName(serverIP);
+			DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
+			socket.send(packet);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	//
+
 	public static void main(String[] args){
 		try{
 			String serverIP = args[0];
@@ -229,9 +258,53 @@ public class Client implements Runnable{
 	}
 
 	public void run(){
+		String serverData;
 		connected = true;
 		while(connected){
 			try{
+				// 
+				byte[] buf = new byte[256];
+				DatagramPacket packet = new DatagramPacket(buf, buf.length);
+
+				try{
+					socket.receive(packet);
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+				
+				serverData = new String(buf);
+				serverData = serverData.trim();
+
+				System.out.println("serverData:" + serverData.split(":"));
+
+				if(!connected && serverData.startsWith("JOINED")){
+					connected = true;
+					System.out.println("Joined");
+				}else if(!connected){
+					System.out.println("Joining..");
+					send("JOIN " + name);
+				}else if(connected){
+					//UI Stuff - clear the players
+					//offscreen.getGraphics().clearRect(0, 0, 640, 480);
+					if (serverData.startsWith("MOVE")){
+						String[] playersInfo = serverData.split(":");
+						System.out.println("serverData: " + serverData);
+						for (int i=0;i<playersInfo.length;i++){
+							String[] playerInfo = playersInfo[i].split(" ");
+							String pname =playerInfo[1];
+							int x = Integer.parseInt(playerInfo[2]);
+							int y = Integer.parseInt(playerInfo[3]);
+							// draw again
+							// offscreen.getGraphics().fillOval(x, y, 20, 20);
+							// offscreen.getGraphics().drawString(pname,x-10,y+30);					
+						}
+						//show the changes
+						//frame.repaint();
+					}
+
+				}
+
+				//
 				InputStream inFromServer = serverSocket.getInputStream();
 	            DataInputStream in = new DataInputStream(inFromServer);
 	            String msg = in.readUTF();
