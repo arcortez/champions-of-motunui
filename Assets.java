@@ -40,7 +40,7 @@ public class Assets {
 
     public static BufferedImage loadImage(String filename) {
         try {
-            return ImageIO.read(new File("../assets"))
+            return ImageIO.read(new File("../assets/"+filename+".png"))
         } catch(IOException e) {
             e.printStackTrace();
             System.exit(1);
