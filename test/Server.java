@@ -49,27 +49,7 @@ public class Server extends Thread{
 
 					break;
 				case GAME_START:
-					for(int i=0;i<maxPlayers;i++){
-						if(clients[i] != null){
-							try{
-								in = new DataInputStream(clients[i].getInputStream());
-								String msg = in.readUTF();
-		            			System.out.println(msg); 	
-		            			for(int j=0;j<maxPlayers;j++){
-									if(clients[j] != null){
-										out = new DataOutputStream(clients[j].getOutputStream());
-										out.writeUTF(msg);
-									}	
-								}
-							}catch(SocketException e){
-								System.exit(1);
-							}catch(IOException e){
-								e.printStackTrace();
-								System.exit(1);
-							}
-						}
-					}
-
+					
 					break;
 			}
 			

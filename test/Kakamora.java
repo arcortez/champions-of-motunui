@@ -9,15 +9,17 @@ public class Kakamora extends JPanel implements Runnable{
 	int xpos;
 	int ypos;
 	int id;
+	boolean isHit;
 	BufferedImage image;
 
-	public Kakamora(int initx, int inity, int id){
+	public Kakamora(int initx, int inity, int id, int type){
 		this.xpos = initx;
 		this.ypos = inity;
 		this.id = id;
+		this.isHit = false;
 		this.setOpaque(false);
 		try {
-			this.image = ImageIO.read(new File("kakamora1.png"));	
+			this.image = ImageIO.read(new File("kakamora"+type+".png"));	
 		} catch(IOException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -25,7 +27,7 @@ public class Kakamora extends JPanel implements Runnable{
 	}
 
 	public void run(){
-		while(this.xpos <= 650) {
+		while(this.xpos <= 650 && isHit == false) {
 			try {
 				for(int i=0;i<4;i++){
 					this.ypos += 5;
