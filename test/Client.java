@@ -31,9 +31,9 @@ public class Client implements Runnable{
 		this.name = name;
 		this.port = port;
 
-		socket = new DatagramSocket();	
+	
 		try{
-				
+			socket = new DatagramSocket();	
 			serverSocket = new Socket(serverIP, port);
 
 			System.out.println("Just connected to " + serverSocket.getRemoteSocketAddress());
@@ -141,8 +141,15 @@ public class Client implements Runnable{
 
 		movementBox = new OverlaidField();
 		movementBox.setPreferredSize(new Dimension(900, 520));
-		Player player1 = new Player(450, 20,1);
-		movementBox.add(player1);
+		// Player player1 = new Player(450, 20,1);
+		InetAddress playerAddress = null;
+		try{
+			playerAddress = InetAddress.getLocalHost();
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		Player player = new Player(name, playerAddress, port, 450, 20, 1);
+		movementBox.add(player);
 		Arrow parrow = new Arrow(-900,-900, true);
 		movementBox.add(parrow);
 		Kakamora[] kaks = new Kakamora[20];
@@ -166,15 +173,16 @@ public class Client implements Runnable{
 				try{
 					if(ke.getKeyChar() == KeyEvent.VK_1){
 						out.writeUTF("game~" + name + "~left");
-						player1.moveLeft();
-						send("MOVES " + name +" " + x + " " + y);
+						player.moveLeft();
+						
+						send("MOVES " + name +" " + player.xpos + " " + player.ypos);
 					}else if(ke.getKeyChar() == KeyEvent.VK_0){
 						out.writeUTF("game~" + name + "~right");
-						player1.moveRight();
-						send("MOVES " + name +" " + x + " " + y);
+						player.moveRight();
+						send("MOVES " + name +" " + player.xpos + " " + player.ypos);
 					}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
 						out.writeUTF("game~" + name + "~FIRE");
-						parrow.setpos(player1.ypos,player1.xpos);
+						parrow.setpos(player.ypos,player.xpos);
 					}
 				}catch(IOException e){
 					e.printStackTrace();
@@ -267,11 +275,19 @@ public class Client implements Runnable{
 			if (!connected && serverData.startsWith("JOINED")){
 				connected = true;
 				System.out.println("Joined.");
-				out.writeUTF("Joined.");
+				try{
+					out.writeUTF("Joined.");
+				}catch(IOException e){
+					e.printStackTrace();
+				}
 			} else if (!connected) {
 				System.out.println("Joining...");
 				send("JOIN " + name);
-				out.writeUTF("Joining");
+				try{
+					out.writeUTF("Joining");
+				}catch(IOException e){
+					e.printStackTrace();
+				}
 			} else if (connected) {
 				if (serverData.startsWith("PLAYER")){
 					String[] playersInfo = serverData.split(":");
@@ -284,7 +300,11 @@ public class Client implements Runnable{
 						
 						//draw ui
 						System.out.println("RECEIVED: " + name + " " + x + " " + y);
-						out.writeUTF("RECEIVED: " + name + " " + x + " " + y);
+						try{
+							out.writeUTF("RECEIVED: " + name + " " + x + " " + y);
+						}catch(IOException e){
+							e.printStackTrace();
+						}
 					}
 
 				}
@@ -307,12 +327,15 @@ public class Client implements Runnable{
 			}catch(IOException er){
 				er.printStackTrace();
 			}
-		}
-		try{
-			serverSocket.close();	
-		}catch(IOException e){
 
+			try{
+				serverSocket.close();	
+			}catch(IOException e){
+	
+			}
 		}
+
+	
 	}
 
 }

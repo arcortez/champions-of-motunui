@@ -3,10 +3,11 @@ import java.awt.*;
 import javax.swing.*;
 import java.io.*;
 import java.awt.image.BufferedImage;
+import java.net.InetAddress;
 
 public class Player extends JPanel implements Runnable{
-	private int xpos;
-	private int ypos;
+	int xpos;
+	int ypos;
 	int playerid;
 	BufferedImage image;
 
@@ -16,7 +17,7 @@ public class Player extends JPanel implements Runnable{
 
 	private String name;
 
-	public Player(String name, InetAdress address, int port, int initx, int inity, int playerid){
+	public Player(String name, InetAddress address, int port, int initx, int inity, int playerid){
 		this.address = address;
 		this.port = port;
 		this.name = name;
@@ -35,7 +36,7 @@ public class Player extends JPanel implements Runnable{
 		t.start();
 	}
 
-	public InetAddress getAdress() {
+	public InetAddress getAddress() {
 		return address;
 	}
 
@@ -43,7 +44,7 @@ public class Player extends JPanel implements Runnable{
 		return port;
 	}
 
-	public int getName(){
+	public String getName(){
 		return name;
 	}
 
@@ -73,7 +74,7 @@ public class Player extends JPanel implements Runnable{
 
 	public String toString(){
 		String val = "";
-		val +="PLAYER " + name + " " + x + " " + y;
+		val +="PLAYER " + name + " " + this.xpos + " " + this.ypos;
 		return val;
 	}
 }

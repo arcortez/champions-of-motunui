@@ -14,22 +14,12 @@ public class GameState{
 		String retval="";
 		for(Iterator ite=players.keySet().iterator();ite.hasNext();){
 			String name=(String)ite.next();
-			NetPlayer player=(NetPlayer)players.get(name);
+			Player player=(Player)players.get(name);
 			retval+=player.toString()+":";
 		}
 		return retval;
     }
     
-    public Player getPlayer(name){
-        for(Iterator ite=players.keySet().iterator();ite.hasNext();){
-			String pname=(String)ite.next();
-			if(name.equals(pname)) {
-                Player player=(NetPlayer)players.get(name);
-            }
-        }
-        
-        return player;
-    }
 	public Map getPlayers(){
 		return players;
 	}

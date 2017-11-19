@@ -1,5 +1,6 @@
 import java.net.*;
 import java.io.*;
+import java.util.*;
 
 public class Server extends Thread{
 	private ServerSocket serverSocket;
@@ -35,7 +36,7 @@ public class Server extends Thread{
 	public void broadcast(String msg){
 		for(Iterator ite=gameState.getPlayers().keySet().iterator();ite.hasNext();){
 			String name = (String) ite.next();
-			Player player = (Player)game.getPlayers().get(name);
+			Player player = (Player)gameState.getPlayers().get(name);
 			send(player, msg);
 		}
 	}
@@ -44,7 +45,7 @@ public class Server extends Thread{
 		DatagramPacket packet;
 
 		byte[] buf = msg.getBytes();
-		packet = new DatagramPacket(buf, buf.length, p.getAdress(), p.getPort());
+		packet = new DatagramPacket(buf, buf.length, p.getAddress(), p.getPort());
 
 		try {
 			serverDataSocket.send(packet);
@@ -71,11 +72,11 @@ public class Server extends Thread{
 
 			switch(stage){
 				case WAITING_FOR_PLAYERS:
-					System.out.println("WAITING_FOR_PLAYERS");
+					// System.out.println("WAITING_FOR_PLAYERS");
 
 					if (playerData.startsWith("JOIN")) {
 						String tokens[] = playerData.split(" ");
-						Player player = new Player(tokens[1], packet.getAdress(), packet.getPort(), 450, 20, playerCount);
+						Player player = new Player(tokens[1], packet.getAddress(), packet.getPort(), 450, 20, playerCount);
 						System.out.println(tokens[1] + "has joined.");
 						gameState.update(tokens[1].trim(), player);
 						broadcast("JOINED " + tokens[1]);
@@ -105,8 +106,7 @@ public class Server extends Thread{
 						int y = Integer.parseInt(playerInfo[3].trim());
 
 						Player player = (Player)gameState.getPlayers().get(name);
-						player.setX(x);
-						player.setY(y);
+						
 
 						gameState.update(name, player);
 
