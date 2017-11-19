@@ -12,9 +12,7 @@ public class Player extends JPanel implements Runnable{
 	BufferedImage image;
 
 	private InetAddress address;
-
 	private int port;
-
 	private String name;
 
 	public Player(String name, InetAddress address, int port, int initx, int inity, int playerid){
@@ -54,6 +52,8 @@ public class Player extends JPanel implements Runnable{
 				this.repaint();
 				Thread.sleep(5);
 			} catch(Exception e) { 
+				e.printStackTrace();
+				System.exit(1);
 			}
 		}
 	}
@@ -67,6 +67,7 @@ public class Player extends JPanel implements Runnable{
 		if(ypos >= 5)
 			this.ypos -= 20;
 	}	
+
 	public void moveRight(){
 	 	if(ypos <= 800)
 	 		this.ypos += 20;
@@ -76,5 +77,6 @@ public class Player extends JPanel implements Runnable{
 		String val = "";
 		val +="PLAYER " + name + " " + this.xpos + " " + this.ypos;
 		return val;
+
 	}
 }

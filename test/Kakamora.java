@@ -58,15 +58,12 @@ public class Kakamora extends JPanel implements Runnable{
 		g.drawImage(this.image, ypos, xpos, null);
 
 	}
-
-
-
 	public void moveLeft(){
 		if(ypos >= 5)
 			this.ypos -= 20;
 	}	
-	 public void moveRight(){
+ 	public void moveRight(){
 	 	if(ypos <= 800)
 	 		this.ypos += 20;
-	 }
+	}
 }

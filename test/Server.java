@@ -2,6 +2,7 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 
+
 public class Server extends Thread{
 	private ServerSocket serverSocket;
 	private Socket[] clients;
@@ -32,7 +33,6 @@ public class Server extends Thread{
 		ready = new boolean[num];
 		System.out.println("Server is running at port "+port+"...");
 	}
-
 	public void broadcast(String msg){
 		for(Iterator ite=gameState.getPlayers().keySet().iterator();ite.hasNext();){
 			String name = (String) ite.next();
@@ -62,9 +62,12 @@ public class Server extends Thread{
 		while(true){
 			byte[] buf = new byte[256];
 			DatagramPacket packet = new DatagramPacket(buf, buf.length);
-			try {
+
+			try{
 				serverDataSocket.receive(packet);
-			}catch(Exception e) {}
+			}catch(Exception e){
+				e.printStackTrace();
+			}
 
 			playerData = new String(buf);
 
@@ -98,7 +101,6 @@ public class Server extends Thread{
 					
 					break;
 				case GAME_START:
-
 					if(playerData.startsWith("MOVES")){
 						String[] playerInfo = playerData.split(" ");
 						String name = playerInfo[1];
@@ -124,12 +126,35 @@ public class Server extends Thread{
 										out.writeUTF(msg);
 									}	
 								}
+							}catch(SocketException e){
+								System.exit(1);
 							}catch(IOException e){
 								e.printStackTrace();
+								System.exit(1);
 							}
+						
 						}
 					}
+					broadcast("GAME START");
+					stage = ONGOING;
+					break;
+				case ONGOING:
+					if (playerData.startsWith("MOVE")){
+						String[] playerInfo = playerData.split(" ");
+						String name = playerInfo[1];
+						int x = Integer.parseInt(playerInfo[2].trim());
+						int y = Integer.parseInt(playerInfo[3].trim());
 
+						// Player player = (Player)players.get(name);
+						// player.setX(x);
+						// player.setY(y);
+
+						// players.put(name, player);
+						// game toString
+						// broadcast()
+						String b = name + "MOVED" + x + " " + y;
+						broadcast(b);
+					}
 					break;
 			}
 			

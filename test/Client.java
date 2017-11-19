@@ -4,13 +4,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import javax.imageio.ImageIO;
 
 public class Client implements Runnable{
-	private boolean connected = false;
+	private boolean connected;
 	private static JPanel screenDeck = new JPanel(new CardLayout());
 	private static JFrame frame;
 	static Thread t;
 	static DatagramSocket socket;
+	static JLabel label;
+
 	private static Socket serverSocket;
 	private static DataOutputStream out;
 	private static DataInputStream in;
@@ -20,18 +23,15 @@ public class Client implements Runnable{
 	private static OverlaidField movementBox;
 
 	static int playerID;
-
 	String serverIP;
 	int port;
 	String name;
 	
-
 	public Client(String serverIP, int port, String name){
 		this.serverIP = serverIP;
 		this.name = name;
 		this.port = port;
 
-	
 		try{
 			socket = new DatagramSocket();	
 			serverSocket = new Socket(serverIP, port);
@@ -73,7 +73,7 @@ public class Client implements Runnable{
 		skipTutorial.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				CardLayout p = (CardLayout)screenDeck.getLayout();
-				p.show(screenDeck, "GAME");
+				p.show(screenDeck, "JButton");
 
 			}
 		});
@@ -150,6 +150,7 @@ public class Client implements Runnable{
 		}
 		Player player = new Player(name, playerAddress, port, 450, 20, 1);
 		movementBox.add(player);
+
 		Arrow parrow = new Arrow(-900,-900, true);
 		movementBox.add(parrow);
 		Kakamora[] kaks = new Kakamora[20];
@@ -195,9 +196,6 @@ public class Client implements Runnable{
 		gameScreen.add(movementBox, BorderLayout.NORTH);
 		gameScreen.add(infoBox, BorderLayout.SOUTH);
 
-
-
-
 		c.add(screenDeck);
 
 		sendButton.addActionListener(new ActionListener(){
@@ -229,13 +227,16 @@ public class Client implements Runnable{
 
 	}
 
+
 	public void send(String msg) {
 		try {
 			byte[] buf = msg.getBytes();
 			InetAddress address = InetAddress.getByName(serverIP);
 			DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
 			socket.send(packet);
-		}catch(Exception e){}
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void main(String[] args){
@@ -257,9 +258,7 @@ public class Client implements Runnable{
 
 	public void run(){
 		String serverData;
-		
 		while(true){
-
 			byte[] buf = new byte[256];
 			DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
@@ -323,7 +322,9 @@ public class Client implements Runnable{
 	            }else if(tokens[0].equals("game")){
 	            	leaderboard.setText(leaderboard.getText()+"\n"+tokens[1]+" "+tokens[2]);
 	            }
-
+			}catch(SocketException e){
+				e.printStackTrace();
+				System.exit(1);
 			}catch(IOException er){
 				er.printStackTrace();
 			}
@@ -334,8 +335,7 @@ public class Client implements Runnable{
 	
 			}
 		}
-
-	
+		
 	}
 
 }
