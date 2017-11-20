@@ -3,6 +3,7 @@ import java.io.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.imageio.ImageIO;
 
 public class Client implements Runnable{
@@ -11,7 +12,9 @@ public class Client implements Runnable{
 	static boolean connected;
 	static DatagramSocket socket;
 	static JLabel label;
+
 	static Socket serverSocket;
+
 	private static DataOutputStream out;
 	private static DataInputStream in;
 	private static OutputStream outToServer;
@@ -49,10 +52,17 @@ public class Client implements Runnable{
 
 	static int playerID;
 	static Kakamora[][] kaks;
-
+	String serverIP;
+	int port;
+	String name;
+	
 	public Client(String serverIP, int port, String name){
+		this.serverIP = serverIP;
+		this.name = name;
+		this.port = port;
+
 		try{
-			socket = new DatagramSocket();		
+			socket = new DatagramSocket();	
 			serverSocket = new Socket(serverIP, port);
 
 			System.out.println("Just connected to " + serverSocket.getRemoteSocketAddress());
@@ -165,11 +175,17 @@ public class Client implements Runnable{
 
 		movementBox = new OverlaidField();
 
-		// movementBox.add(new ImageIcon("../assets/gameScreen.png"));
-
 		movementBox.setPreferredSize(new Dimension(900, 520));
-		Player player1 = new Player(450, 20,1);
-		movementBox.add(player1);
+		// Player player1 = new Player(450, 20,1);
+		InetAddress playerAddress = null;
+		try{
+			playerAddress = InetAddress.getLocalHost();
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		Player player = new Player(name, playerAddress, port, 450, 20, 1);
+		movementBox.add(player);
+
 		Arrow parrow = new Arrow(-900,-900, true);
 		movementBox.add(parrow);
 		kaks = new Kakamora[4][19];
@@ -279,9 +295,72 @@ public class Client implements Runnable{
 	}
 
 	public void run(){
-		leaderboard.requestFocus();
+    leaderboard.requestFocus();
+		String serverData;
+		while(true){
+			byte[] buf = new byte[256];
+			DatagramPacket packet = new DatagramPacket(buf, buf.length);
+
+			try {
+				socket.receive(packet);
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+
+			serverData = new String(buf);
+			serverData = serverData.trim();
+
+			if (!connected && serverData.startsWith("JOINED")){
+				connected = true;
+				System.out.println("Joined.");
+				try{
+					out.writeUTF("Joined.");
+				}catch(IOException e){
+					e.printStackTrace();
+				}
+			} else if (!connected) {
+				System.out.println("Joining...");
+				send("JOIN " + name);
+				try{
+					out.writeUTF("Joining");
+				}catch(IOException e){
+					e.printStackTrace();
+				}
+			} else if (connected) {
+				if (serverData.startsWith("PLAYER")){
+					String[] playersInfo = serverData.split(":");
+					for (int i=0;i<playersInfo.length;i++){
+						String[] playerInfo = playersInfo[i].split(" ");
+						
+						String name = playerInfo[1];
+						int x = Integer.parseInt(playerInfo[2]);
+						int y = Integer.parseInt(playerInfo[3]);
+						
+						//draw ui
+						System.out.println("RECEIVED: " + name + " " + x + " " + y);
+						try{
+							out.writeUTF("RECEIVED: " + name + " " + x + " " + y);
+						}catch(IOException e){
+							e.printStackTrace();
+						}
+					}
+
+				}
+			}
 
 
+	}
+
+
+	public void send(String msg) {
+		try {
+			byte[] buf = msg.getBytes();
+			InetAddress address = InetAddress.getByName(serverIP);
+			DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
+			socket.send(packet);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void main(String[] args){
@@ -315,7 +394,7 @@ class ChatListener implements Runnable{
 
 	public void run(){
 		boolean connected = true;
-		while(connected){
+    while(connected){
 			try{
 				InputStream inFromServer = Client.serverSocket.getInputStream();
 	            DataInputStream in = new DataInputStream(inFromServer);
@@ -324,7 +403,6 @@ class ChatListener implements Runnable{
 	            System.out.println(msg);
 
             	Client.textarea.setText("\n"+Client.textarea.getText()+msg);
-
 			}catch(SocketException e){
 				e.printStackTrace();
 				System.exit(1);

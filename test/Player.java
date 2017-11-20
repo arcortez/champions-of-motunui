@@ -3,6 +3,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.io.*;
 import java.awt.image.BufferedImage;
+import java.net.InetAddress;
 
 public class Player extends JPanel implements Runnable{
 	int xpos;
@@ -10,7 +11,15 @@ public class Player extends JPanel implements Runnable{
 	int playerid;
 	BufferedImage image;
 
-	public Player(int initx, int inity, int playerid){
+	private InetAddress address;
+	private int port;
+	private String name;
+
+	public Player(String name, InetAddress address, int port, int initx, int inity, int playerid){
+		this.address = address;
+		this.port = port;
+		this.name = name;
+
 		this.xpos = initx;
 		this.ypos = inity;
 		this.playerid = playerid;
@@ -23,6 +32,18 @@ public class Player extends JPanel implements Runnable{
 		}
 		Thread t = new Thread(this);
 		t.start();
+	}
+
+	public InetAddress getAddress() {
+		return address;
+	}
+
+	public int getPort(){
+		return port;
+	}
+
+	public String getName(){
+		return name;
 	}
 
 	public void run(){
@@ -47,8 +68,16 @@ public class Player extends JPanel implements Runnable{
 		if(ypos >= 45)
 			this.ypos -= 20;
 	}	
+
 	 public void moveRight(){
 	 	if(ypos <= 790)
 	 		this.ypos += 20;
-	 }
+	}
+
+	public String toString(){
+		String val = "";
+		val +="PLAYER " + name + " " + this.xpos + " " + this.ypos;
+		return val;
+
+	}
 }
