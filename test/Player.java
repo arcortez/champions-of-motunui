@@ -60,16 +60,17 @@ public class Player extends JPanel implements Runnable{
 
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
+		g.drawImage(Assets.gameScreen, 0,0, null);
 		g.drawImage(this.image, ypos, xpos, null);
 	}
 
 	public void moveLeft(){
-		if(ypos >= 5)
+		if(ypos >= 45)
 			this.ypos -= 20;
 	}	
 
-	public void moveRight(){
-	 	if(ypos <= 800)
+	 public void moveRight(){
+	 	if(ypos <= 790)
 	 		this.ypos += 20;
 	}
 

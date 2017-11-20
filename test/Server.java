@@ -4,19 +4,18 @@ import java.util.*;
 
 
 public class Server extends Thread{
-	private ServerSocket serverSocket;
-	private Socket[] clients;
-	private int maxPlayers = 0;
+	static ServerSocket serverSocket;
+	static Socket[] clients;
+	static int maxPlayers = 0;
     static DatagramSocket serverDataSocket = null;
     static final int WAITING_FOR_PLAYERS = 1;
     static final int GAME_START = 2;
     static final int ONGOING = 3;	
-    private static DataInputStream in;
-    private static DataOutputStream out;
-	private static boolean[] ready;
+    static DataInputStream in;
+    static DataOutputStream out;
+   
 
 	GameState gameState;
-
 
 	public Server(int port, int num) throws IOException{
 		try {
@@ -30,7 +29,6 @@ public class Server extends Thread{
 		serverSocket = new ServerSocket(port);
 		this.maxPlayers = num;
 		clients = new Socket[num];
-		ready = new boolean[num];
 		System.out.println("Server is running at port "+port+"...");
 	}
 	public void broadcast(String msg){
@@ -57,8 +55,8 @@ public class Server extends Thread{
 	public void run(){
 		boolean connected = true;
 		int playerCount = 0;
-		int stage = WAITING_FOR_PLAYERS;
 		String playerData;
+
 		while(true){
 			byte[] buf = new byte[256];
 			DatagramPacket packet = new DatagramPacket(buf, buf.length);
@@ -93,6 +91,11 @@ public class Server extends Thread{
 							System.out.println("Input/Output Error!");
 							break;
 						}
+            
+            clients[playerCount] = serverSocket.accept();
+				    in = new DataInputStream(clients[playerCount].getInputStream());
+				    System.out.println("Just connected to player [" + in.readUTF() + "] on "+clients[playerCount].getRemoteSocketAddress());
+            
 						if(playerCount >= maxPlayers){
 							stage = GAME_START;
 							System.out.println("GAME HAS STARTED.");
@@ -137,8 +140,10 @@ public class Server extends Thread{
 					}
 					broadcast("GAME START");
 					stage = ONGOING;
+          ChatServer cserver = new ChatServer();
 					break;
 				case ONGOING:
+          
 					if (playerData.startsWith("MOVE")){
 						String[] playerInfo = playerData.split(" ");
 						String name = playerInfo[1];
@@ -157,9 +162,16 @@ public class Server extends Thread{
 					}
 					break;
 			}
-			
-		}
 
+
+           
+
+		}catch(SocketException e){
+			System.exit(1);
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 	public static void main(String[] args){
@@ -178,5 +190,38 @@ public class Server extends Thread{
                     "Insufficient arguments given.");
         }
 
+	}
+}
+
+
+class ChatServer implements Runnable{
+	public ChatServer(){
+		Thread t = new Thread(this);
+		t.start();
+	}
+
+	public void run(){
+		while(true){
+			try{
+				for(int i=0;i<Server.maxPlayers;i++){
+					if(Server.clients[i] != null){
+						Server.in = new DataInputStream(Server.clients[i].getInputStream());
+						String msg = Server.in.readUTF();
+	        			System.out.println(msg); 	
+	        			for(int j=0;j<Server.maxPlayers;j++){
+							if(Server.clients[j] != null){
+								Server.out = new DataOutputStream(Server.clients[j].getOutputStream());
+								Server.out.writeUTF(msg);
+							}	
+						}
+					}
+				}
+			}catch(SocketException e){
+				System.exit(1);
+			}catch(IOException e){
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
 	}
 }
