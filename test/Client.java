@@ -139,6 +139,7 @@ public class Client implements Runnable{
 		messageBox.add(message, BorderLayout.CENTER);
 		messageBox.add(sendButton, BorderLayout.EAST);
 
+
 		chatBox.add(messageBox, BorderLayout.EAST);
 		infoBox.add(chatBox, BorderLayout.WEST);
 
@@ -222,16 +223,20 @@ public class Client implements Runnable{
 		leaderboard.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent ke) {}
 			public void keyTyped(KeyEvent ke) {
-				if(ke.getKeyChar() == KeyEvent.VK_1){
-					player1.moveLeft();
+				try{
+					if(ke.getKeyChar() == KeyEvent.VK_1){
+						player1.moveLeft();
+						out.writeUTF(name+"> left");
 
-				}else if(ke.getKeyChar() == KeyEvent.VK_0){
-					player1.moveRight();
+					}else if(ke.getKeyChar() == KeyEvent.VK_0){
+						player1.moveRight();
+						out.writeUTF(name+"> right");
 
-				}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
-					parrow.setpos(player1.ypos,player1.xpos);
-
-				}
+					}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
+						parrow.setpos(player1.ypos,player1.xpos);
+						out.writeUTF(name+"> FIRE");
+					}
+				}catch(IOException e){}
 			}
 			public void keyReleased(KeyEvent ke) {}
 		});
