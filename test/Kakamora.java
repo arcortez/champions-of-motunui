@@ -9,6 +9,7 @@ public class Kakamora extends JPanel implements Runnable{
 	int xpos;
 	int ypos;
 	int id;
+	int type;
 	boolean isHit;
 	BufferedImage image;
 
@@ -16,6 +17,7 @@ public class Kakamora extends JPanel implements Runnable{
 		this.xpos = initx;
 		this.ypos = inity;
 		this.id = id;
+		this.type = type;
 		this.isHit = false;
 		this.setOpaque(false);
 		try {
@@ -29,25 +31,90 @@ public class Kakamora extends JPanel implements Runnable{
 	public void run(){
 		while(this.xpos <= 650 && isHit == false) {
 			try {
-				for(int i=0;i<4;i++){
-					this.ypos += 5;
-					this.repaint();
-					Thread.sleep(300);
-					this.ypos += 5;
-					this.repaint();
-					Thread.sleep(300);
-					this.ypos += 5;
-					this.repaint();
-					Thread.sleep(300);
-					this.ypos -= 5;
-					this.repaint();
-					Thread.sleep(300);
-					this.ypos -= 5;
-					this.repaint();
-					Thread.sleep(300);
-					this.ypos -= 5;
-					this.repaint();
-					Thread.sleep(300);
+				if(this.type == 1){
+					for(int i=0;i<4;i++){
+						this.ypos += 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos += 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos += 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos -= 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos -= 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos -= 5;
+						this.repaint();
+						Thread.sleep(300);
+					}
+				}else if(this.type == 2){
+					for(int i=0;i<4;i++){
+						this.ypos -= 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos -= 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos -= 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos += 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos += 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos += 5;
+						this.repaint();
+						Thread.sleep(300);
+					}
+				}else if(this.type == 3){
+					for(int i=0;i<4;i++){
+						this.ypos += 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos -= 10;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos += 10;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos += 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos -= 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos -= 5;
+						this.repaint();
+						Thread.sleep(300);
+					}
+				}else{
+					for(int i=0;i<4;i++){
+						this.ypos += 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos += 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos += 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos -= 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos -= 5;
+						this.repaint();
+						Thread.sleep(300);
+						this.ypos -= 5;
+						this.repaint();
+						Thread.sleep(300);
+					}
 				}
 				this.xpos += 15;
 			} catch(Exception e) { 

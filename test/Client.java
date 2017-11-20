@@ -35,6 +35,7 @@ public class Client implements Runnable{
 	private static JButton focus;
 	private static JTextField lives;
 	private static JScrollPane leadScroll;
+	private static JLabel tutorialImage;
 
 	private static OverlaidField movementBox; //actual game field
 
@@ -44,7 +45,10 @@ public class Client implements Runnable{
 	private static JButton prev;
 	private static JButton next;
 
+	private static int currentTutorialScreen = 0;
+
 	static int playerID;
+	static Kakamora[][] kaks;
 
 	public Client(String serverIP, int port, String name){
 		try{
@@ -74,20 +78,43 @@ public class Client implements Runnable{
 
 		tutorialScreen.setLayout(new BorderLayout());
 		southTutorial = new JPanel();
-		skipTutorial = new JButton("Skip Tutorial");
-		prev = new JButton("< Previous");
-		
+		southTutorial.setOpaque(false);
+		skipTutorial = new JButton("SKIP TUTORIAL");
+		// skipTutorial = new JButton(new ImageIcon("../assets/skip-n.png"));
+		// skipTutorial.setRolloverIcon(new ImageIcon("../assets/skip-h.png"));
+		// skipTutorial.setPressedIcon(new ImageIcon("../assets/skip-c.png"));
+		// skipTutorial.setContentAreaFilled(false);
+		// skipTutorial.setBorderPainted(false);
+		// skipTutorial.setMargin(new Insets(0,0,0,0));
 
-		next = new JButton("Next >");
+		prev = new JButton("< Prev");
+		// prev = new JButton(new ImageIcon("../assets/prev-n.png"));
+		// prev.setRolloverIcon(new ImageIcon("../assets/prev-h.png"));
+		// prev.setPressedIcon(new ImageIcon("../assets/prev-c.png"));
+		// prev.setContentAreaFilled(false);
+		// prev.setBorderPainted(false);
+		// prev.setMargin(new Insets(0,0,0,0));
+
+
+		next = new JButton(new ImageIcon("../assets/next-n.png"));
+		next.setRolloverIcon(new ImageIcon("../assets/next-h.png"));
+		next.setPressedIcon(new ImageIcon("../assets/next-c.png"));
+		next.setContentAreaFilled(false);
+		next.setBorderPainted(false);
+		next.setMargin(new Insets(0,0,0,0));
+
 		southTutorial.setLayout(new BorderLayout());
+		southTutorial.setOpaque(false);
 		southTutorial.add(prev, BorderLayout.WEST);
 		southTutorial.add(next, BorderLayout.EAST);
 		southTutorial.add(skipTutorial, BorderLayout.CENTER);
 
-		tutorialScreen.add(new JLabel("insert tutorial here"), BorderLayout.CENTER);
+		tutorialImage = new JLabel(new ImageIcon("../assets/title.png"));
+		prev.setEnabled(false);
+		tutorialScreen.add(tutorialImage, BorderLayout.CENTER);
 		tutorialScreen.add(southTutorial, BorderLayout.SOUTH);
-		screenDeck.add(gameScreen, "GAME");
 		screenDeck.add(tutorialScreen, "TUTORIAL");
+		screenDeck.add(gameScreen, "GAME");
 		gameScreen.setLayout(new BorderLayout());
 		
 
@@ -137,27 +164,22 @@ public class Client implements Runnable{
 
 		movementBox = new OverlaidField();
 
+		// movementBox.add(new ImageIcon("../assets/gameScreen.png"));
+
 		movementBox.setPreferredSize(new Dimension(900, 520));
 		Player player1 = new Player(450, 20,1);
 		movementBox.add(player1);
 		Arrow parrow = new Arrow(-900,-900, true);
 		movementBox.add(parrow);
-		Kakamora[] kaks = new Kakamora[20];
-		for(int k=0;k<19;k++){
-			kaks[k] = new Kakamora(50,40*k, 1, (k%3)+1);
-			movementBox.add(kaks[k]);
-			Thread y = new Thread(kaks[k]);
-			y.start();
-		}
-		for(int l=0;l<20;l++){
-			Kakamora kak = new Kakamora(0,50*l,1, (l%3)+1);
-			movementBox.add(kak);
-			Thread y = new Thread(kak);
-			y.start();
-		}
+		kaks = new Kakamora[4][19];
 
+		for(int i=0;i<4;i++){
+			for (int j=0;j<19;j++) {
+				kaks[i][j] = new Kakamora(i*40, (j*40)+70, i*j, (i%3)+1);
+				movementBox.add(kaks[i][j]);
+			}
+		}
 		
-
 
 		gameScreen.add(movementBox, BorderLayout.NORTH);
 		gameScreen.add(infoBox, BorderLayout.SOUTH);
@@ -167,14 +189,13 @@ public class Client implements Runnable{
 		skipTutorial.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				CardLayout p = (CardLayout)screenDeck.getLayout();
-				p.show(screenDeck, "JButton");
-
+				p.show(screenDeck, "GAME");
 			}
 		});
 
 		sendButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
-				if(message.getText() != "" || message.getText() != null){
+				if(message.getText().length() > 0){
 					try{
 						out.writeUTF(name + ": " + message.getText());
 					}catch(IOException er){
@@ -189,6 +210,12 @@ public class Client implements Runnable{
 		focus.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				leaderboard.requestFocus();
+				for(int i=0;i<4;i++){
+					for (int j=0;j<19;j++) {
+						Thread t = new Thread(kaks[i][j]);
+						t.start();
+					}
+				}
 			}
 		});
 
@@ -209,6 +236,32 @@ public class Client implements Runnable{
 			public void keyReleased(KeyEvent ke) {}
 		});
 
+
+		next.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				if(currentTutorialScreen >= 4){
+					CardLayout p = (CardLayout)screenDeck.getLayout();
+					p.show(screenDeck, "GAME");
+				}
+				currentTutorialScreen += 1;
+				tutorialImage.setIcon(new ImageIcon("../assets/tutorial"+ currentTutorialScreen +".png"));
+				prev.setEnabled(true);
+			}
+		});
+
+		prev.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				if(currentTutorialScreen == 1){
+					tutorialImage.setIcon(new ImageIcon("../assets/title.png"));	
+					prev.setEnabled(false);
+				}else{
+					currentTutorialScreen -= 1;
+					tutorialImage.setIcon(new ImageIcon("../assets/tutorial"+ currentTutorialScreen +".png"));	
+				}
+				
+			}
+		});
+
 		frame.pack();
 		frame.setVisible(true);
 		frame.setLocationRelativeTo(null);
@@ -217,11 +270,13 @@ public class Client implements Runnable{
 		Thread t = new Thread(this);
 		t.start();
 
-		leaderboard.requestFocus();
+		
 	}
 
 	public void run(){
-		
+		leaderboard.requestFocus();
+
+
 	}
 
 	public static void main(String[] args){
@@ -232,7 +287,7 @@ public class Client implements Runnable{
 			//usage: java Client <ip address of server> <port number> <name of player>		
 			Client client = new Client(serverIP, port, name);
 	        ChatListener listen = new ChatListener();
-	        
+
 		}catch(ArrayIndexOutOfBoundsException e){
             System.out.println("Usage: java GreetingClient <server ip> <port no.> <your name>");
             System.exit(1);
