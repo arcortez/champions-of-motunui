@@ -14,12 +14,13 @@ public class Server extends Thread{
     static DataInputStream in;
     static DataOutputStream out;
    
-
+	int stage;
 	GameState gameState;
 
 	public Server(int port, int num) throws IOException{
 		try {
 			serverDataSocket = new DatagramSocket(port);
+			System.out.println("serverdatasocket up");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}	
@@ -30,6 +31,7 @@ public class Server extends Thread{
 		this.maxPlayers = num;
 		clients = new Socket[num];
 		System.out.println("Server is running at port "+port+"...");
+		stage = WAITING_FOR_PLAYERS;
 	}
 	public void broadcast(String msg){
 		for(Iterator ite=gameState.getPlayers().keySet().iterator();ite.hasNext();){
@@ -58,11 +60,13 @@ public class Server extends Thread{
 		String playerData;
 
 		while(true){
+			System.out.println("true");
 			byte[] buf = new byte[256];
 			DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
 			try{
 				serverDataSocket.receive(packet);
+				System.out.println("RECEIVED");
 			}catch(Exception e){
 				e.printStackTrace();
 			}
@@ -71,6 +75,8 @@ public class Server extends Thread{
 
 			playerData = playerData.trim();
 
+			System.out.println(playerData);
+			System.out.println(stage);
 			switch(stage){
 				case WAITING_FOR_PLAYERS:
 					// System.out.println("WAITING_FOR_PLAYERS");
@@ -91,11 +97,7 @@ public class Server extends Thread{
 							System.out.println("Input/Output Error!");
 							break;
 						}
-            
-            clients[playerCount] = serverSocket.accept();
-				    in = new DataInputStream(clients[playerCount].getInputStream());
-				    System.out.println("Just connected to player [" + in.readUTF() + "] on "+clients[playerCount].getRemoteSocketAddress());
-            
+						
 						if(playerCount >= maxPlayers){
 							stage = GAME_START;
 							System.out.println("GAME HAS STARTED.");
@@ -140,7 +142,7 @@ public class Server extends Thread{
 					}
 					broadcast("GAME START");
 					stage = ONGOING;
-          ChatServer cserver = new ChatServer();
+          			ChatServer cserver = new ChatServer();
 					break;
 				case ONGOING:
           
@@ -162,15 +164,6 @@ public class Server extends Thread{
 					}
 					break;
 			}
-
-
-           
-
-		}catch(SocketException e){
-			System.exit(1);
-		}catch(IOException e){
-			e.printStackTrace();
-			System.exit(1);
 		}
 	}
 

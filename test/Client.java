@@ -241,15 +241,18 @@ public class Client implements Runnable{
 			public void keyTyped(KeyEvent ke) {
 				try{
 					if(ke.getKeyChar() == KeyEvent.VK_1){
-						player1.moveLeft();
+						player.moveLeft();
+						System.out.println("MOVE");
+						send("MOVE " + name + " " + player.xpos + " " + player.ypos);
 						out.writeUTF(name+"> left");
 
 					}else if(ke.getKeyChar() == KeyEvent.VK_0){
-						player1.moveRight();
+						player.moveRight();
 						out.writeUTF(name+"> right");
+						send("MOVE " + name + " " + player.xpos + " " + player.ypos);
 
 					}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
-						parrow.setpos(player1.ypos,player1.xpos);
+						parrow.setpos(player.ypos,player.xpos);
 						out.writeUTF(name+"> FIRE");
 					}
 				}catch(IOException e){}
@@ -290,26 +293,32 @@ public class Client implements Runnable{
 		
 		Thread t = new Thread(this);
 		t.start();
-
+		System.out.println("before");
 		
 	}
 
 	public void run(){
-    leaderboard.requestFocus();
+		System.out.println("run");
+		boolean serverUp = true;
+   		leaderboard.requestFocus();
 		String serverData;
 		while(true){
+			System.out.println("entered");
 			byte[] buf = new byte[256];
 			DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
 			try {
 				socket.receive(packet);
+				System.out.println("packet received");
 			}catch(Exception e) {
+				System.out.println("exception");
 				e.printStackTrace();
 			}
 
 			serverData = new String(buf);
 			serverData = serverData.trim();
-
+			System.out.println("server: " + serverData);
+			System.out.println(connected);
 			if (!connected && serverData.startsWith("JOINED")){
 				connected = true;
 				System.out.println("Joined.");
@@ -348,7 +357,7 @@ public class Client implements Runnable{
 				}
 			}
 
-
+		}
 	}
 
 
@@ -357,6 +366,7 @@ public class Client implements Runnable{
 			byte[] buf = msg.getBytes();
 			InetAddress address = InetAddress.getByName(serverIP);
 			DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
+			System.out.println("SEND");
 			socket.send(packet);
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -394,25 +404,25 @@ class ChatListener implements Runnable{
 
 	public void run(){
 		boolean connected = true;
-    while(connected){
-			try{
-				InputStream inFromServer = Client.serverSocket.getInputStream();
-	            DataInputStream in = new DataInputStream(inFromServer);
-	            String msg = in.readUTF();
+		while(connected){
+				try{
+					InputStream inFromServer = Client.serverSocket.getInputStream();
+					DataInputStream in = new DataInputStream(inFromServer);
+					String msg = in.readUTF();
 
-	            System.out.println(msg);
+					System.out.println(msg);
 
-            	Client.textarea.setText("\n"+Client.textarea.getText()+msg);
-			}catch(SocketException e){
-				e.printStackTrace();
-				System.exit(1);
-			}catch(IOException er){
-				er.printStackTrace();
-				System.exit(1);
+					Client.textarea.setText("\n"+Client.textarea.getText()+msg);
+				}catch(SocketException e){
+					e.printStackTrace();
+					System.exit(1);
+				}catch(IOException er){
+					er.printStackTrace();
+					System.exit(1);
+				}
 			}
-		}
-		try{
-			Client.serverSocket.close();	
-		}catch(IOException e){}
+			try{
+				Client.serverSocket.close();	
+			}catch(IOException e){}
 	}
 }
