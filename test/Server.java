@@ -6,7 +6,6 @@ import java.util.*;
 public class Server extends Thread{
 	static ServerSocket serverSocket;
 	static Socket[] clients;
-	static int port;
 	static int maxPlayers = 0;
     static DatagramSocket serverDataSocket = null;
     static final int WAITING_FOR_PLAYERS = 1;
@@ -30,6 +29,7 @@ public class Server extends Thread{
 		gameState = new GameState();
 
 		serverSocket = new ServerSocket(port);
+
 		this.maxPlayers = num;
 		clients = new Socket[num];
 		ready = new boolean[num];
@@ -128,14 +128,6 @@ public class Server extends Thread{
 					break;
 			}
 		}
-	}
-
-	public void send(InetAddress address,String msg){
-		try{
-			byte[] buf = msg.getBytes();
-        	DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
-        	socketRcv.send(packet);
-        }catch(Exception l){}
 	}
 
 	public static void main(String[] args){
