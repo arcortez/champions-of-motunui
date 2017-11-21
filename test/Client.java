@@ -338,7 +338,7 @@ class ChatListener implements Runnable{
 
 	            System.out.println(msg);
 
-            	Client.textarea.setText("\n"+Client.textarea.getText()+msg);
+            	Client.textarea.setText("\n"+Client.textarea.getText()+"\n"+msg);
 
 			}catch(SocketException e){
 				e.printStackTrace();
