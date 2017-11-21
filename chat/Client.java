@@ -9,15 +9,7 @@ import java.net.UnknownHostException;
 public class Client implements Runnable {
 
   // The client socket
-  private static Socket clientSocket = null;
-  // The output stream
-  private static PrintStream os = null;
-  // The input stream
-//   private static DataInputStream is = null;
-  private static BufferedReader in = null;
-
-  private static BufferedReader inputLine = null;
-  private static boolean closed = false;
+  
   
   public static void main(String[] args) {
 
