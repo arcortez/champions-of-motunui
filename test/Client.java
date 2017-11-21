@@ -52,7 +52,15 @@ public class Client implements Runnable{
 	private static int currentTutorialScreen = 0;
 
 	static int playerID;
+	static int maxPlayers;
+
+	static int xpos;
+	static int ypos;
+
 	static Kakamora[][] kaks;
+	static PlayerGUI[] players;
+	static Arrow[] arrows;
+
 	String serverIP;
 	int port;
 	String name;
@@ -70,7 +78,9 @@ public class Client implements Runnable{
 
 			OutputStream outToServer = serverSocket.getOutputStream();
             out = new DataOutputStream(outToServer);
-            out.writeUTF(name);
+			out.writeUTF(name);
+			
+
 		}
 		catch(UnknownHostException e){e.printStackTrace();System.exit(1);}
 		catch(IOException e){e.printStackTrace();System.exit(1);}
@@ -178,17 +188,8 @@ public class Client implements Runnable{
 
 		movementBox.setPreferredSize(new Dimension(900, 520));
 		// Player player1 = new Player(450, 20,1);
-		InetAddress playerAddress = null;
-		try{
-			playerAddress = InetAddress.getLocalHost();
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-		Player player = new Player(name, playerAddress, port, 450, 20, 1);
-		movementBox.add(player);
-
-		Arrow parrow = new Arrow(-900,-900, true);
-		movementBox.add(parrow);
+		
+		
 		kaks = new Kakamora[4][19];
 
 		for(int i=0;i<4;i++){
@@ -243,13 +244,15 @@ public class Client implements Runnable{
 			public void keyTyped(KeyEvent ke) {
 				try{
 					if(ke.getKeyChar() == KeyEvent.VK_1){
-						player.moveLeft();
-						send("MOVE " + name + " " + player.xpos + " " + player.ypos);
+						// player.moveLeft();
+						moveLeft();
+						send("MOVE " + playerID + " " + xpos + " " + ypos);
 					}else if(ke.getKeyChar() == KeyEvent.VK_0){
-						player.moveRight();
-						send("MOVE " + name + " " + player.xpos + " " + player.ypos);
+						// player.moveRight();
+						moveRight();
+						send("MOVE " + playerID + " " + xpos + " " + ypos);
 					}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
-						parrow.setpos(player.ypos,player.xpos);
+						// parrow.setpos(player.ypos,player.xpos);
 						out.writeUTF(name+"> FIRE");
 					}
 				}catch(IOException e){}
@@ -313,20 +316,46 @@ public class Client implements Runnable{
 			}
 
 			serverData = new String(packet.getData());
+			System.out.println("serverData: " + serverData);
 			
-			if (!connected && serverData.startsWith("JOINED")){
+			if (!connected && serverData.startsWith("ID")){
 				connected = true;
+				// String[] tk = serverData.split(" ");
+				// playerID = Integer.parseInt(tk[1].trim());
+				// maxPlayers = Integer.parseInt(tk[2].trim());
+				// players = new PlayerGUI[maxPlayers];
+
+				// for(int i=0;i<maxPlayers;i++){
+
+				// 	PlayerGUI player = new PlayerGUI(name, 450, 20*(i+1), i);
+				// 	xpos = 450;
+				// 	ypos = 20*(i+1);
+				// 	// movementBox.add(player);
+				// 	// movementBox.revalidate();
+				// 	// movementBox.repaint();
+				// 	// frame.pack();
+
+				// 	players[i] = player;
+			
+				// 	Arrow parrow = new Arrow(i, -900,-900, true);
+				// 	movementBox.add(parrow);
+
+
+					
+				// 	arrows[i] = parrow;
+				// }				
+				
 				System.out.println("You have joined the game.");
 			} else if (connected) {
-				System.out.println("connectedData: " + serverData);
 				if (serverData.startsWith("MOVE")){
 					String[] playerInfo = serverData.split(" ");
 
 					String pname = playerInfo[1];
-					int x = Integer.parseInt(playerInfo[2]);
-					int y = Integer.parseInt(playerInfo[3]);
+					int x = Integer.parseInt(playerInfo[2].trim());
+					int y = Integer.parseInt(playerInfo[3].trim());
+				
 
-					System.out.println("MOVE " + pname + x + y);
+					System.out.println("MOVE " + playerInfo[1]+ playerInfo[2] + playerInfo[3]);
 
 					// change UI
 				}
@@ -345,6 +374,16 @@ public class Client implements Runnable{
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static void moveLeft(){
+		if(ypos >= 45)
+			ypos -= 20;
+	}	
+
+	 public static void moveRight(){
+	 	if(ypos <= 790)
+	 		ypos += 20;
 	}
 
 	public static void main(String[] args){
@@ -386,7 +425,7 @@ class ChatListener implements Runnable{
 
 					System.out.println(msg);
 
-					Client.textarea.setText("\n"+Client.textarea.getText()+msg);
+					Client.textarea.setText("\n"+Client.textarea.getText()+"\n"+msg);
 				}catch(SocketException e){
 					e.printStackTrace();
 					System.exit(1);

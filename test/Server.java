@@ -29,11 +29,16 @@ public class Server extends Thread{
 		gameState = new GameState();
 
 		serverSocket = new ServerSocket(port);
+
 		this.maxPlayers = num;
 		clients = new Socket[num];
 		ready = new boolean[num];
 		System.out.println("Server is running at port "+port+"...");
+
+
+
 		t.start();
+
 	}
 	public void broadcast(String msg){
 		for(Iterator ite=gameState.getPlayers().keySet().iterator();ite.hasNext();){
@@ -73,14 +78,19 @@ public class Server extends Thread{
 			}
 
 			playerData = new String(packet.getData());
-		
+
+			System.out.println("playerData: " + playerData);
+			System.out.println("stage: " + stage);
 			switch(stage){
 				case WAITING_FOR_PLAYERS:
 					if (playerData.startsWith("JOIN")) {
 						String tokens[] = playerData.split(" ");
-						Player player = new Player(tokens[1], packet.getAddress(), packet.getPort(), 450, 20, playerCount);
+						Player player = new Player(tokens[1], packet.getAddress(), packet.getPort(), 450, 20*(playerCount+1), playerCount);
 						gameState.update(tokens[1].trim(), player);
-						broadcast("JOINED " + tokens[1]);
+
+						// broadcast("JOINED " + tokens[1] + " " + playerCount );
+						String msg = "ID " + playerCount + " " + maxPlayers;
+						send(player, msg);
 						try{
 							clients[playerCount] = serverSocket.accept();
 							in = new DataInputStream(clients[playerCount].getInputStream());
@@ -100,30 +110,9 @@ public class Server extends Thread{
 					
 					break;
 				case GAME_START:
-					for(int i=0;i<maxPlayers;i++){
-						if(clients[i] != null){
-							try{
-								in = new DataInputStream(clients[i].getInputStream());
-								String msg = in.readUTF();
-		            			System.out.println(msg); 	
-		            			for(int j=0;j<maxPlayers;j++){
-									if(clients[j] != null){
-										out = new DataOutputStream(clients[j].getOutputStream());
-										out.writeUTF(msg);
-									}	
-								}
-							}catch(SocketException e){
-								System.exit(1);
-							}catch(IOException e){
-								e.printStackTrace();
-								System.exit(1);
-							}
-						
-						}
-					}
 					broadcast("GAME START");
 					stage = ONGOING;
-          			// ChatServer cserver = new ChatServer();
+          			
 					break;
 				case ONGOING:   
 					System.out.println("ongoingDATA: " + playerData);
@@ -146,9 +135,9 @@ public class Server extends Thread{
             int port = Integer.parseInt(args[0]);
             int num = Integer.parseInt(args[1]);
             // Thread t = new Server(port, num);
-			// t.start();
-			
+			// t.start();			
 			new Server(port, num);
+			ChatServer cserver = new ChatServer();
         }catch(IOException e){
             //e.printStackTrace();
             System.out.println("Usage: java Server <port no.> <no. of players>\n"+
