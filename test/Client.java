@@ -7,11 +7,15 @@ import javax.imageio.ImageIO;
 
 public class Client implements Runnable{
 
+
 	//variables for networking
 	static boolean connected;
 	static DatagramSocket socket;
+	static DatagramSocket socketRcv;
 	static JLabel label;
 	static Socket serverSocket;
+	static String serverIP;
+	static int port;
 	private static DataOutputStream out;
 	private static DataInputStream in;
 	private static OutputStream outToServer;
@@ -51,10 +55,11 @@ public class Client implements Runnable{
 	static Kakamora[][] kaks;
 
 	public Client(String serverIP, int port, String name){
+		this.serverIP = serverIP;
+		this.port = port;
 		try{
-			socket = new DatagramSocket();		
+			socket = new DatagramSocket(port+1);
 			serverSocket = new Socket(serverIP, port);
-
 			System.out.println("Just connected to " + serverSocket.getRemoteSocketAddress());
 
 			outToServer = serverSocket.getOutputStream();
@@ -191,6 +196,12 @@ public class Client implements Runnable{
 			public void actionPerformed(ActionEvent e){
 				CardLayout p = (CardLayout)screenDeck.getLayout();
 				p.show(screenDeck, "GAME");
+				for(int i=0;i<4;i++){
+					for (int j=0;j<19;j++) {
+						Thread t = new Thread(kaks[i][j]);
+						t.start();
+					}
+				}
 			}
 		});
 
@@ -211,32 +222,24 @@ public class Client implements Runnable{
 		focus.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				leaderboard.requestFocus();
-				for(int i=0;i<4;i++){
-					for (int j=0;j<19;j++) {
-						Thread t = new Thread(kaks[i][j]);
-						t.start();
-					}
-				}
 			}
 		});
 
 		leaderboard.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent ke) {}
 			public void keyTyped(KeyEvent ke) {
-				try{
-					if(ke.getKeyChar() == KeyEvent.VK_1){
-						player1.moveLeft();
-						out.writeUTF(name+"> left");
+				if(ke.getKeyChar() == KeyEvent.VK_1){
+					player1.moveLeft();
+					send(name+"> left");
 
-					}else if(ke.getKeyChar() == KeyEvent.VK_0){
-						player1.moveRight();
-						out.writeUTF(name+"> right");
+				}else if(ke.getKeyChar() == KeyEvent.VK_0){
+					player1.moveRight();
+					send(name+"> right");
 
-					}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
-						parrow.setpos(player1.ypos,player1.xpos);
-						out.writeUTF(name+"> FIRE");
-					}
-				}catch(IOException e){}
+				}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
+					parrow.setpos(player1.ypos,player1.xpos);
+					send(name+"> FIRE");
+				}
 			}
 			public void keyReleased(KeyEvent ke) {}
 		});
@@ -247,6 +250,13 @@ public class Client implements Runnable{
 				if(currentTutorialScreen >= 4){
 					CardLayout p = (CardLayout)screenDeck.getLayout();
 					p.show(screenDeck, "GAME");
+					for(int i=0;i<4;i++){
+						for (int j=0;j<19;j++) {
+							Thread t = new Thread(kaks[i][j]);
+							t.start();
+						}
+					}
+					send(name+"> ready");
 				}
 				currentTutorialScreen += 1;
 				tutorialImage.setIcon(new ImageIcon("../assets/tutorial"+ currentTutorialScreen +".png"));
@@ -272,16 +282,10 @@ public class Client implements Runnable{
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		
-		Thread t = new Thread(this);
-		t.start();
-
-		
 	}
 
 	public void run(){
 		leaderboard.requestFocus();
-
-
 	}
 
 	public static void main(String[] args){
@@ -292,6 +296,10 @@ public class Client implements Runnable{
 			//usage: java Client <ip address of server> <port number> <name of player>		
 			Client client = new Client(serverIP, port, name);
 	        ChatListener listen = new ChatListener();
+       		Thread t = new Thread(client);
+			t.start();		
+
+
 
 		}catch(ArrayIndexOutOfBoundsException e){
             System.out.println("Usage: java GreetingClient <server ip> <port no.> <your name>");
@@ -304,7 +312,14 @@ public class Client implements Runnable{
 
 	}
 
-
+	public void send(String msg){
+		try{
+			byte[] buf = msg.getBytes();
+        	InetAddress address = InetAddress.getByName(Client.serverIP);
+        	DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
+        	socket.send(packet);
+        }catch(Exception l){}
+	}
 }
 
 class ChatListener implements Runnable{

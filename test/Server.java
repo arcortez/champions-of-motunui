@@ -3,7 +3,10 @@ import java.io.*;
 
 public class Server extends Thread{
 	static ServerSocket serverSocket;
+	static DatagramSocket server;
+	static DatagramSocket socketRcv;
 	static Socket[] clients;
+	static int port;
 	static int maxPlayers = 0;
     static DatagramSocket serverDataSocket = null;
     static final int WAITING_FOR_PLAYERS = 1;
@@ -14,6 +17,8 @@ public class Server extends Thread{
     
 	public Server(int port, int num) throws IOException{
 		serverSocket = new ServerSocket(port);
+		server = new DatagramSocket(port);
+		socketRcv = new DatagramSocket(port+2);
 		this.maxPlayers = num;
 		clients = new Socket[num];
 		System.out.println("Server is running at port "+port+"...");
@@ -37,6 +42,21 @@ public class Server extends Thread{
 
 
             ChatServer cserver = new ChatServer();
+            while(true){
+            	byte[] buf = new byte[256];
+				DatagramPacket packet = new DatagramPacket(buf, buf.length);
+				try{
+	     			server.receive(packet);
+				}catch(Exception ioe){}
+				String msg = new String(buf);
+				msg = msg.trim();
+				System.out.println("Message: "+msg);
+					
+				for(int i=0;i<maxPlayers;i++){
+					send(clients[i].getInetAddress(), msg);
+				}
+
+            }
 
 		}catch(SocketException e){
 			System.exit(1);
@@ -44,6 +64,14 @@ public class Server extends Thread{
 			e.printStackTrace();
 			System.exit(1);
 		}
+	}
+
+	public void send(InetAddress address,String msg){
+		try{
+			byte[] buf = msg.getBytes();
+        	DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
+        	socketRcv.send(packet);
+        }catch(Exception l){}
 	}
 
 	public static void main(String[] args){
