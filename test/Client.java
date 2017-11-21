@@ -3,6 +3,7 @@ import java.io.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.imageio.ImageIO;
 
 public class Client implements Runnable{
@@ -13,12 +14,14 @@ public class Client implements Runnable{
 	static DatagramSocket socket;
 	static DatagramSocket socketRcv;
 	static JLabel label;
+
 	static Socket serverSocket;
 	static String serverIP;
 	static int port;
+
+	Thread t = new Thread(this);
 	private static DataOutputStream out;
 	private static DataInputStream in;
-	private static OutputStream outToServer;
 
 	//variables for GUI
 	private static JPanel screenDeck = new JPanel(new CardLayout());
@@ -52,25 +55,40 @@ public class Client implements Runnable{
 	private static int currentTutorialScreen = 0;
 
 	static int playerID;
-	static Kakamora[][] kaks;
+	static int maxPlayers;
 
+	static int xpos;
+	static int ypos;
+
+	static Kakamora[][] kaks;
+	static PlayerGUI[] players;
+	static Arrow[] arrows;
+
+	String serverIP;
+	int port;
+	String name;
+	
 	public Client(String serverIP, int port, String name){
 		this.serverIP = serverIP;
+		this.name = name;
 		this.port = port;
+
 		try{
-			socket = new DatagramSocket(port+1);
+			socket = new DatagramSocket();
 			serverSocket = new Socket(serverIP, port);
 			System.out.println("Just connected to " + serverSocket.getRemoteSocketAddress());
 
-			outToServer = serverSocket.getOutputStream();
+			OutputStream outToServer = serverSocket.getOutputStream();
             out = new DataOutputStream(outToServer);
-            out.writeUTF(name);
+			out.writeUTF(name);
+			
+
 		}
-		catch(SocketException e){e.printStackTrace();System.exit(1);}
 		catch(UnknownHostException e){e.printStackTrace();System.exit(1);}
 		catch(IOException e){e.printStackTrace();System.exit(1);}
 
-
+		t.start();
+	
 		frame = new JFrame("Champions of Motunui : "+name);
 		c = frame.getContentPane();
 		frame.setPreferredSize(new Dimension(900,700));
@@ -170,13 +188,10 @@ public class Client implements Runnable{
 
 		movementBox = new OverlaidField();
 
-		// movementBox.add(new ImageIcon("../assets/gameScreen.png"));
-
 		movementBox.setPreferredSize(new Dimension(900, 520));
-		Player player1 = new Player(450, 20,1);
-		movementBox.add(player1);
-		Arrow parrow = new Arrow(-900,-900, true);
-		movementBox.add(parrow);
+		// Player player1 = new Player(450, 20,1);
+		
+		
 		kaks = new Kakamora[4][19];
 
 		for(int i=0;i<4;i++){
@@ -225,21 +240,26 @@ public class Client implements Runnable{
 			}
 		});
 
+		leaderboard.requestFocus();
 		leaderboard.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent ke) {}
 			public void keyTyped(KeyEvent ke) {
-				if(ke.getKeyChar() == KeyEvent.VK_1){
-					player1.moveLeft();
-					send(name+"> left");
 
-				}else if(ke.getKeyChar() == KeyEvent.VK_0){
-					player1.moveRight();
-					send(name+"> right");
+				try{
+					if(ke.getKeyChar() == KeyEvent.VK_1){
+						// player.moveLeft();
+						moveLeft();
+						send("MOVE " + playerID + " " + xpos + " " + ypos);
+					}else if(ke.getKeyChar() == KeyEvent.VK_0){
+						// player.moveRight();
+						moveRight();
+						send("MOVE " + playerID + " " + xpos + " " + ypos);
+					}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
+						// parrow.setpos(player.ypos,player.xpos);
+						out.writeUTF(name+"> FIRE");
+					}
+				}catch(IOException e){}
 
-				}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
-					parrow.setpos(player1.ypos,player1.xpos);
-					send(name+"> FIRE");
-				}
 			}
 			public void keyReleased(KeyEvent ke) {}
 		});
@@ -285,7 +305,96 @@ public class Client implements Runnable{
 	}
 
 	public void run(){
-		leaderboard.requestFocus();
+		String serverData;
+		while(true){
+			try{
+				Thread.sleep(1);
+			}catch(Exception ioe){}
+
+			byte[] buf = new byte[1024];
+			DatagramPacket packet = new DatagramPacket(buf, buf.length);
+
+			if (!connected) {
+				System.out.println("Joining...");
+				send("JOIN " + name);
+			} 
+
+			try {
+				socket.receive(packet);
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+
+			serverData = new String(packet.getData());
+			System.out.println("serverData: " + serverData);
+			
+			if (!connected && serverData.startsWith("ID")){
+				connected = true;
+				// String[] tk = serverData.split(" ");
+				// playerID = Integer.parseInt(tk[1].trim());
+				// maxPlayers = Integer.parseInt(tk[2].trim());
+				// players = new PlayerGUI[maxPlayers];
+
+				// for(int i=0;i<maxPlayers;i++){
+
+				// 	PlayerGUI player = new PlayerGUI(name, 450, 20*(i+1), i);
+				// 	xpos = 450;
+				// 	ypos = 20*(i+1);
+				// 	// movementBox.add(player);
+				// 	// movementBox.revalidate();
+				// 	// movementBox.repaint();
+				// 	// frame.pack();
+
+				// 	players[i] = player;
+			
+				// 	Arrow parrow = new Arrow(i, -900,-900, true);
+				// 	movementBox.add(parrow);
+
+
+					
+				// 	arrows[i] = parrow;
+				// }				
+				
+				System.out.println("You have joined the game.");
+			} else if (connected) {
+				if (serverData.startsWith("MOVE")){
+					String[] playerInfo = serverData.split(" ");
+
+					String pname = playerInfo[1];
+					int x = Integer.parseInt(playerInfo[2].trim());
+					int y = Integer.parseInt(playerInfo[3].trim());
+				
+
+					System.out.println("MOVE " + playerInfo[1]+ playerInfo[2] + playerInfo[3]);
+
+					// change UI
+				}
+			}
+		}
+	}
+
+
+	public void send(String msg) {
+		try {
+			byte[] buf = msg.getBytes();
+			InetAddress address = InetAddress.getByName(serverIP);
+			DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
+			System.out.println("SEND");
+			socket.send(packet);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void moveLeft(){
+		if(ypos >= 45)
+			ypos -= 20;
+	}	
+
+	 public static void moveRight(){
+	 	if(ypos <= 790)
+	 		ypos += 20;
+
 	}
 
 	public static void main(String[] args){
@@ -310,15 +419,6 @@ public class Client implements Runnable{
             System.exit(1);
         }
 
-	}
-
-	public void send(String msg){
-		try{
-			byte[] buf = msg.getBytes();
-        	InetAddress address = InetAddress.getByName(Client.serverIP);
-        	DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
-        	socket.send(packet);
-        }catch(Exception l){}
 	}
 }
 
@@ -347,9 +447,9 @@ class ChatListener implements Runnable{
 				er.printStackTrace();
 				System.exit(1);
 			}
-		}
-		try{
-			Client.serverSocket.close();	
-		}catch(IOException e){}
+      
+			try{
+				Client.serverSocket.close();	
+			}catch(IOException e){}
 	}
 }

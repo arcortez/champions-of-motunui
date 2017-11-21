@@ -9,8 +9,10 @@ public class Arrow extends JPanel implements Runnable{
 	private BufferedImage image;
 	private int xpos;
 	private int ypos;
+	private int id;
 
-	public Arrow(int xPos,int yPos, boolean isUpwards){
+	public Arrow(int id, int xPos,int yPos, boolean isUpwards){
+		this.id = id;
 		this.xpos = xPos;
 		this.ypos = yPos;
 		this.setOpaque(false);
