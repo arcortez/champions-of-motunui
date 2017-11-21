@@ -12,15 +12,16 @@ public class Server extends Thread{
     static final int GAME_START = 2;
     static final int ONGOING = 3;	
     static DataInputStream in;
-    static DataOutputStream out;
+	static DataOutputStream out;
+	private static boolean[] ready;
+
+	Thread t = new Thread(this);
    
-	int stage;
 	GameState gameState;
 
 	public Server(int port, int num) throws IOException{
 		try {
 			serverDataSocket = new DatagramSocket(port);
-			System.out.println("serverdatasocket up");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}	
@@ -30,8 +31,9 @@ public class Server extends Thread{
 		serverSocket = new ServerSocket(port);
 		this.maxPlayers = num;
 		clients = new Socket[num];
+		ready = new boolean[num];
 		System.out.println("Server is running at port "+port+"...");
-		stage = WAITING_FOR_PLAYERS;
+		t.start();
 	}
 	public void broadcast(String msg){
 		for(Iterator ite=gameState.getPlayers().keySet().iterator();ite.hasNext();){
@@ -58,33 +60,25 @@ public class Server extends Thread{
 		boolean connected = true;
 		int playerCount = 0;
 		String playerData;
+		int stage = WAITING_FOR_PLAYERS;
 
 		while(true){
-			System.out.println("true");
-			byte[] buf = new byte[256];
+			byte[] buf = new byte[1024];
 			DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
 			try{
 				serverDataSocket.receive(packet);
-				System.out.println("RECEIVED");
 			}catch(Exception e){
 				e.printStackTrace();
 			}
 
-			playerData = new String(buf);
-
-			playerData = playerData.trim();
-
-			System.out.println(playerData);
-			System.out.println(stage);
+			playerData = new String(packet.getData());
+		
 			switch(stage){
 				case WAITING_FOR_PLAYERS:
-					// System.out.println("WAITING_FOR_PLAYERS");
-
 					if (playerData.startsWith("JOIN")) {
 						String tokens[] = playerData.split(" ");
 						Player player = new Player(tokens[1], packet.getAddress(), packet.getPort(), 450, 20, playerCount);
-						System.out.println(tokens[1] + "has joined.");
 						gameState.update(tokens[1].trim(), player);
 						broadcast("JOINED " + tokens[1]);
 						try{
@@ -106,19 +100,6 @@ public class Server extends Thread{
 					
 					break;
 				case GAME_START:
-					if(playerData.startsWith("MOVES")){
-						String[] playerInfo = playerData.split(" ");
-						String name = playerInfo[1];
-						int x = Integer.parseInt(playerInfo[2].trim());
-						int y = Integer.parseInt(playerInfo[3].trim());
-
-						Player player = (Player)gameState.getPlayers().get(name);
-						
-
-						gameState.update(name, player);
-
-						broadcast(gameState.toString());
-					}
 					for(int i=0;i<maxPlayers;i++){
 						if(clients[i] != null){
 							try{
@@ -142,24 +123,17 @@ public class Server extends Thread{
 					}
 					broadcast("GAME START");
 					stage = ONGOING;
-          			ChatServer cserver = new ChatServer();
+          			// ChatServer cserver = new ChatServer();
 					break;
-				case ONGOING:
-          
+				case ONGOING:   
+					System.out.println("ongoingDATA: " + playerData);
 					if (playerData.startsWith("MOVE")){
 						String[] playerInfo = playerData.split(" ");
 						String name = playerInfo[1];
 						int x = Integer.parseInt(playerInfo[2].trim());
 						int y = Integer.parseInt(playerInfo[3].trim());
 
-						// Player player = (Player)players.get(name);
-						// player.setX(x);
-						// player.setY(y);
-
-						// players.put(name, player);
-						// game toString
-						// broadcast()
-						String b = name + "MOVED" + x + " " + y;
+						String b = "MOVE " + name + " " + x + " " + y;
 						broadcast(b);
 					}
 					break;
@@ -171,8 +145,10 @@ public class Server extends Thread{
 		try{
             int port = Integer.parseInt(args[0]);
             int num = Integer.parseInt(args[1]);
-            Thread t = new Server(port, num);
-            t.start();
+            // Thread t = new Server(port, num);
+			// t.start();
+			
+			new Server(port, num);
         }catch(IOException e){
             //e.printStackTrace();
             System.out.println("Usage: java Server <port no.> <no. of players>\n"+

@@ -15,9 +15,10 @@ public class Client implements Runnable{
 
 	static Socket serverSocket;
 
+	Thread t = new Thread(this);
+
 	private static DataOutputStream out;
 	private static DataInputStream in;
-	private static OutputStream outToServer;
 
 	//variables for GUI
 	private static JPanel screenDeck = new JPanel(new CardLayout());
@@ -62,20 +63,20 @@ public class Client implements Runnable{
 		this.port = port;
 
 		try{
-			socket = new DatagramSocket();	
+			socket = new DatagramSocket();
 			serverSocket = new Socket(serverIP, port);
 
 			System.out.println("Just connected to " + serverSocket.getRemoteSocketAddress());
 
-			outToServer = serverSocket.getOutputStream();
+			OutputStream outToServer = serverSocket.getOutputStream();
             out = new DataOutputStream(outToServer);
             out.writeUTF(name);
 		}
-		catch(SocketException e){e.printStackTrace();System.exit(1);}
 		catch(UnknownHostException e){e.printStackTrace();System.exit(1);}
 		catch(IOException e){e.printStackTrace();System.exit(1);}
 
-
+		t.start();
+	
 		frame = new JFrame("Champions of Motunui : "+name);
 		c = frame.getContentPane();
 		frame.setPreferredSize(new Dimension(900,700));
@@ -236,21 +237,17 @@ public class Client implements Runnable{
 			}
 		});
 
+		leaderboard.requestFocus();
 		leaderboard.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent ke) {}
 			public void keyTyped(KeyEvent ke) {
 				try{
 					if(ke.getKeyChar() == KeyEvent.VK_1){
 						player.moveLeft();
-						System.out.println("MOVE");
 						send("MOVE " + name + " " + player.xpos + " " + player.ypos);
-						out.writeUTF(name+"> left");
-
 					}else if(ke.getKeyChar() == KeyEvent.VK_0){
 						player.moveRight();
-						out.writeUTF(name+"> right");
 						send("MOVE " + name + " " + player.xpos + " " + player.ypos);
-
 					}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
 						parrow.setpos(player.ypos,player.xpos);
 						out.writeUTF(name+"> FIRE");
@@ -291,72 +288,49 @@ public class Client implements Runnable{
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		
-		Thread t = new Thread(this);
-		t.start();
-		System.out.println("before");
-		
 	}
 
 	public void run(){
-		System.out.println("run");
-		boolean serverUp = true;
-   		leaderboard.requestFocus();
+
 		String serverData;
 		while(true){
-			System.out.println("entered");
-			byte[] buf = new byte[256];
+			try{
+				Thread.sleep(1);
+			}catch(Exception ioe){}
+
+			byte[] buf = new byte[1024];
 			DatagramPacket packet = new DatagramPacket(buf, buf.length);
+
+			if (!connected) {
+				System.out.println("Joining...");
+				send("JOIN " + name);
+			} 
 
 			try {
 				socket.receive(packet);
-				System.out.println("packet received");
 			}catch(Exception e) {
-				System.out.println("exception");
 				e.printStackTrace();
 			}
 
-			serverData = new String(buf);
-			serverData = serverData.trim();
-			System.out.println("server: " + serverData);
-			System.out.println(connected);
+			serverData = new String(packet.getData());
+			
 			if (!connected && serverData.startsWith("JOINED")){
 				connected = true;
-				System.out.println("Joined.");
-				try{
-					out.writeUTF("Joined.");
-				}catch(IOException e){
-					e.printStackTrace();
-				}
-			} else if (!connected) {
-				System.out.println("Joining...");
-				send("JOIN " + name);
-				try{
-					out.writeUTF("Joining");
-				}catch(IOException e){
-					e.printStackTrace();
-				}
+				System.out.println("You have joined the game.");
 			} else if (connected) {
-				if (serverData.startsWith("PLAYER")){
-					String[] playersInfo = serverData.split(":");
-					for (int i=0;i<playersInfo.length;i++){
-						String[] playerInfo = playersInfo[i].split(" ");
-						
-						String name = playerInfo[1];
-						int x = Integer.parseInt(playerInfo[2]);
-						int y = Integer.parseInt(playerInfo[3]);
-						
-						//draw ui
-						System.out.println("RECEIVED: " + name + " " + x + " " + y);
-						try{
-							out.writeUTF("RECEIVED: " + name + " " + x + " " + y);
-						}catch(IOException e){
-							e.printStackTrace();
-						}
-					}
+				System.out.println("connectedData: " + serverData);
+				if (serverData.startsWith("MOVE")){
+					String[] playerInfo = serverData.split(" ");
 
+					String pname = playerInfo[1];
+					int x = Integer.parseInt(playerInfo[2]);
+					int y = Integer.parseInt(playerInfo[3]);
+
+					System.out.println("MOVE " + pname + x + y);
+
+					// change UI
 				}
 			}
-
 		}
 	}
 
