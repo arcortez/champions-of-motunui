@@ -49,6 +49,9 @@ public class Client implements Runnable{
 	private static JButton prev;
 	private static JButton next;
 
+	private static JPanel waitingScreen;
+	private static JButton readyButton;
+
 	private static int currentTutorialScreen = 0;
 
 	static int playerID;
@@ -61,9 +64,9 @@ public class Client implements Runnable{
 	static PlayerGUI[] players;
 	static Arrow[] arrows;
 
-	String serverIP;
-	int port;
-	String name;
+	static String serverIP;
+	static int port;
+	static String name;
 	
 	public Client(String serverIP, int port, String name){
 		this.serverIP = serverIP;
@@ -87,6 +90,73 @@ public class Client implements Runnable{
 
 		t.start();
 	
+		
+		
+	}
+
+	public void run(){
+
+		String serverData;
+		while(true){
+			try{
+				Thread.sleep(1);
+			}catch(Exception ioe){}
+
+			byte[] buf = new byte[1024];
+			DatagramPacket packet = new DatagramPacket(buf, buf.length);
+
+			if (!connected) {
+				System.out.println("Joining...");
+				send("JOIN " + name);
+			} 
+
+			try {
+				socket.receive(packet);
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+
+			serverData = new String(packet.getData());
+			System.out.println("serverData: " + serverData);
+			
+			if (!connected && serverData.startsWith("ID")){
+				connected = true;
+				String[] tk = serverData.split(" ");
+				playerID = Integer.parseInt(tk[1].trim());
+				maxPlayers = Integer.parseInt(tk[2].trim());
+					
+				
+				initGUI(maxPlayers);
+				
+				System.out.println("You have joined the game.");
+			} else if (connected) {
+				if (serverData.startsWith("GAME START")){
+					CardLayout p = (CardLayout)screenDeck.getLayout();
+					p.show(screenDeck, "GAME");
+					leaderboard.requestFocus();
+					for(int i=0;i<4;i++){
+						for (int j=0;j<19;j++) {
+							Thread t = new Thread(kaks[i][j]);
+							t.start();
+						}
+					}
+				} else if (serverData.startsWith("MOVE")){
+					String[] playerInfo = serverData.split(" ");
+
+					int pID =  Integer.parseInt(playerInfo[1].trim());
+					int x = Integer.parseInt(playerInfo[2].trim());
+					int y = Integer.parseInt(playerInfo[3].trim());
+				
+
+					System.out.println("MOVE " + playerInfo[1]+ playerInfo[2] + playerInfo[3]);
+					players[pID].setPos(x,y);
+					// change UI
+				}
+			}
+		}
+	}
+
+	public void initGUI(int maxPlayers){
 		frame = new JFrame("Champions of Motunui : "+name);
 		c = frame.getContentPane();
 		frame.setPreferredSize(new Dimension(900,700));
@@ -134,7 +204,22 @@ public class Client implements Runnable{
 		prev.setEnabled(false);
 		tutorialScreen.add(tutorialImage, BorderLayout.CENTER);
 		tutorialScreen.add(southTutorial, BorderLayout.SOUTH);
-		screenDeck.add(tutorialScreen, "TUTORIAL");
+		
+		waitingScreen = new JPanel();
+		waitingScreen.setLayout(new BorderLayout());
+		waitingScreen.add(new JLabel(new ImageIcon("../assets/waiting.png")), BorderLayout.NORTH);
+		readyButton = new JButton("READY!!");
+		waitingScreen.add(readyButton, BorderLayout.SOUTH);
+
+		readyButton.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				send("READY " + playerID);
+				readyButton.setEnabled(false);
+			}
+		});
+
+		screenDeck.add(tutorialScreen, "TUTORIAL");		
+		screenDeck.add(waitingScreen, "WAITING");
 		screenDeck.add(gameScreen, "GAME");
 		gameScreen.setLayout(new BorderLayout());
 		
@@ -189,7 +274,23 @@ public class Client implements Runnable{
 		movementBox.setPreferredSize(new Dimension(900, 520));
 		// Player player1 = new Player(450, 20,1);
 		
-		
+		players = new PlayerGUI[maxPlayers];
+		arrows = new Arrow[maxPlayers];
+
+		for(int i=0;i<maxPlayers;i++){
+
+			PlayerGUI player = new PlayerGUI(name, 450, 20*(i+1), i);
+			xpos = 450;
+			ypos = 20*(i+1);
+			movementBox.add(player);
+			
+			players[i] = player;
+			
+			Arrow parrow = new Arrow(i, -900,-900, true);
+			movementBox.add(parrow);
+			arrows[i] = parrow;
+		}
+
 		kaks = new Kakamora[4][19];
 
 		for(int i=0;i<4;i++){
@@ -208,7 +309,7 @@ public class Client implements Runnable{
 		skipTutorial.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				CardLayout p = (CardLayout)screenDeck.getLayout();
-				p.show(screenDeck, "GAME");
+				p.show(screenDeck, "WAITING");
 			}
 		});
 
@@ -229,12 +330,6 @@ public class Client implements Runnable{
 		focus.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				leaderboard.requestFocus();
-				for(int i=0;i<4;i++){
-					for (int j=0;j<19;j++) {
-						Thread t = new Thread(kaks[i][j]);
-						t.start();
-					}
-				}
 			}
 		});
 
@@ -290,79 +385,7 @@ public class Client implements Runnable{
 		frame.setVisible(true);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
-		
 	}
-
-	public void run(){
-
-		String serverData;
-		while(true){
-			try{
-				Thread.sleep(1);
-			}catch(Exception ioe){}
-
-			byte[] buf = new byte[1024];
-			DatagramPacket packet = new DatagramPacket(buf, buf.length);
-
-			if (!connected) {
-				System.out.println("Joining...");
-				send("JOIN " + name);
-			} 
-
-			try {
-				socket.receive(packet);
-			}catch(Exception e) {
-				e.printStackTrace();
-			}
-
-			serverData = new String(packet.getData());
-			System.out.println("serverData: " + serverData);
-			
-			if (!connected && serverData.startsWith("ID")){
-				connected = true;
-				// String[] tk = serverData.split(" ");
-				// playerID = Integer.parseInt(tk[1].trim());
-				// maxPlayers = Integer.parseInt(tk[2].trim());
-				// players = new PlayerGUI[maxPlayers];
-
-				// for(int i=0;i<maxPlayers;i++){
-
-				// 	PlayerGUI player = new PlayerGUI(name, 450, 20*(i+1), i);
-				// 	xpos = 450;
-				// 	ypos = 20*(i+1);
-				// 	// movementBox.add(player);
-				// 	// movementBox.revalidate();
-				// 	// movementBox.repaint();
-				// 	// frame.pack();
-
-				// 	players[i] = player;
-			
-				// 	Arrow parrow = new Arrow(i, -900,-900, true);
-				// 	movementBox.add(parrow);
-
-
-					
-				// 	arrows[i] = parrow;
-				// }				
-				
-				System.out.println("You have joined the game.");
-			} else if (connected) {
-				if (serverData.startsWith("MOVE")){
-					String[] playerInfo = serverData.split(" ");
-
-					String pname = playerInfo[1];
-					int x = Integer.parseInt(playerInfo[2].trim());
-					int y = Integer.parseInt(playerInfo[3].trim());
-				
-
-					System.out.println("MOVE " + playerInfo[1]+ playerInfo[2] + playerInfo[3]);
-
-					// change UI
-				}
-			}
-		}
-	}
-
 
 	public void send(String msg) {
 		try {
@@ -425,7 +448,7 @@ class ChatListener implements Runnable{
 
 					System.out.println(msg);
 
-					Client.textarea.setText("\n"+Client.textarea.getText()+"\n"+msg);
+					Client.textarea.setText(Client.textarea.getText()+"\n"+msg);
 				}catch(SocketException e){
 					e.printStackTrace();
 					System.exit(1);

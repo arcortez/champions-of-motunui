@@ -13,9 +13,10 @@ public class Server extends Thread{
     static final int ONGOING = 3;	
     static DataInputStream in;
 	static DataOutputStream out;
-	private static boolean[] ready;
 
 	Thread t = new Thread(this);
+
+	static int ready = 0;
    
 	GameState gameState;
 
@@ -32,10 +33,8 @@ public class Server extends Thread{
 
 		this.maxPlayers = num;
 		clients = new Socket[num];
-		ready = new boolean[num];
+	
 		System.out.println("Server is running at port "+port+"...");
-
-
 
 		t.start();
 
@@ -67,6 +66,7 @@ public class Server extends Thread{
 		String playerData;
 		int stage = WAITING_FOR_PLAYERS;
 
+		ChatServer cserver = new ChatServer();
 		while(true){
 			byte[] buf = new byte[1024];
 			DatagramPacket packet = new DatagramPacket(buf, buf.length);
@@ -91,16 +91,7 @@ public class Server extends Thread{
 						// broadcast("JOINED " + tokens[1] + " " + playerCount );
 						String msg = "ID " + playerCount + " " + maxPlayers;
 						send(player, msg);
-						try{
-							clients[playerCount] = serverSocket.accept();
-							in = new DataInputStream(clients[playerCount].getInputStream());
-							System.out.println("Just connected to player [" + in.readUTF() + "] on "+clients[playerCount].getRemoteSocketAddress());
-							playerCount++;
-						}catch(IOException e){
-							e.printStackTrace();
-							System.out.println("Input/Output Error!");
-							break;
-						}
+						playerCount++;
 						
 						if(playerCount >= maxPlayers){
 							stage = GAME_START;
@@ -110,8 +101,16 @@ public class Server extends Thread{
 					
 					break;
 				case GAME_START:
-					broadcast("GAME START");
-					stage = ONGOING;
+					if(playerData.startsWith("READY")){
+						String[] tokens = playerData.split(" ");
+
+						int pID =  Integer.parseInt(tokens[1].trim());
+						ready++;
+					}
+					if(ready >= maxPlayers){
+						broadcast("GAME START");
+						stage = ONGOING;
+					}
           			
 					break;
 				case ONGOING:   
@@ -159,6 +158,24 @@ class ChatServer implements Runnable{
 	}
 
 	public void run(){
+		int playerCount = 0;
+		try{
+			while(playerCount < Server.maxPlayers){
+				System.out.println("WAITING_FOR_PLAYERS");
+				Server.clients[playerCount] = Server.serverSocket.accept();
+				Server.in = new DataInputStream(Server.clients[playerCount].getInputStream());
+				System.out.println("Just connected to player [" + Server.in.readUTF() + "] on "+Server.clients[playerCount].getRemoteSocketAddress());
+				playerCount++;
+			}
+			System.out.println("ALL PLAYERS HAVE CONNECTED.");
+		}catch(SocketException e){
+			System.exit(1);
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+
 		while(true){
 			try{
 				for(int i=0;i<Server.maxPlayers;i++){
