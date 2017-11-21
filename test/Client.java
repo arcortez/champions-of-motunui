@@ -8,15 +8,18 @@ import javax.imageio.ImageIO;
 
 public class Client implements Runnable{
 
+
 	//variables for networking
 	static boolean connected;
 	static DatagramSocket socket;
+	static DatagramSocket socketRcv;
 	static JLabel label;
 
 	static Socket serverSocket;
+	static String serverIP;
+	static int port;
 
 	Thread t = new Thread(this);
-
 	private static DataOutputStream out;
 	private static DataInputStream in;
 
@@ -73,7 +76,6 @@ public class Client implements Runnable{
 		try{
 			socket = new DatagramSocket();
 			serverSocket = new Socket(serverIP, port);
-
 			System.out.println("Just connected to " + serverSocket.getRemoteSocketAddress());
 
 			OutputStream outToServer = serverSocket.getOutputStream();
@@ -209,6 +211,12 @@ public class Client implements Runnable{
 			public void actionPerformed(ActionEvent e){
 				CardLayout p = (CardLayout)screenDeck.getLayout();
 				p.show(screenDeck, "GAME");
+				for(int i=0;i<4;i++){
+					for (int j=0;j<19;j++) {
+						Thread t = new Thread(kaks[i][j]);
+						t.start();
+					}
+				}
 			}
 		});
 
@@ -229,12 +237,6 @@ public class Client implements Runnable{
 		focus.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				leaderboard.requestFocus();
-				for(int i=0;i<4;i++){
-					for (int j=0;j<19;j++) {
-						Thread t = new Thread(kaks[i][j]);
-						t.start();
-					}
-				}
 			}
 		});
 
@@ -242,6 +244,7 @@ public class Client implements Runnable{
 		leaderboard.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent ke) {}
 			public void keyTyped(KeyEvent ke) {
+
 				try{
 					if(ke.getKeyChar() == KeyEvent.VK_1){
 						// player.moveLeft();
@@ -256,6 +259,7 @@ public class Client implements Runnable{
 						out.writeUTF(name+"> FIRE");
 					}
 				}catch(IOException e){}
+
 			}
 			public void keyReleased(KeyEvent ke) {}
 		});
@@ -266,6 +270,13 @@ public class Client implements Runnable{
 				if(currentTutorialScreen >= 4){
 					CardLayout p = (CardLayout)screenDeck.getLayout();
 					p.show(screenDeck, "GAME");
+					for(int i=0;i<4;i++){
+						for (int j=0;j<19;j++) {
+							Thread t = new Thread(kaks[i][j]);
+							t.start();
+						}
+					}
+					send(name+"> ready");
 				}
 				currentTutorialScreen += 1;
 				tutorialImage.setIcon(new ImageIcon("../assets/tutorial"+ currentTutorialScreen +".png"));
@@ -294,7 +305,6 @@ public class Client implements Runnable{
 	}
 
 	public void run(){
-
 		String serverData;
 		while(true){
 			try{
@@ -384,6 +394,7 @@ public class Client implements Runnable{
 	 public static void moveRight(){
 	 	if(ypos <= 790)
 	 		ypos += 20;
+
 	}
 
 	public static void main(String[] args){
@@ -394,6 +405,10 @@ public class Client implements Runnable{
 			//usage: java Client <ip address of server> <port number> <name of player>		
 			Client client = new Client(serverIP, port, name);
 	        ChatListener listen = new ChatListener();
+       		Thread t = new Thread(client);
+			t.start();		
+
+
 
 		}catch(ArrayIndexOutOfBoundsException e){
             System.out.println("Usage: java GreetingClient <server ip> <port no.> <your name>");
@@ -405,8 +420,6 @@ public class Client implements Runnable{
         }
 
 	}
-
-
 }
 
 class ChatListener implements Runnable{
@@ -418,22 +431,23 @@ class ChatListener implements Runnable{
 	public void run(){
 		boolean connected = true;
 		while(connected){
-				try{
-					InputStream inFromServer = Client.serverSocket.getInputStream();
-					DataInputStream in = new DataInputStream(inFromServer);
-					String msg = in.readUTF();
+			try{
+				InputStream inFromServer = Client.serverSocket.getInputStream();
+	            DataInputStream in = new DataInputStream(inFromServer);
+	            String msg = in.readUTF();
 
-					System.out.println(msg);
+	            System.out.println(msg);
 
-					Client.textarea.setText("\n"+Client.textarea.getText()+"\n"+msg);
-				}catch(SocketException e){
-					e.printStackTrace();
-					System.exit(1);
-				}catch(IOException er){
-					er.printStackTrace();
-					System.exit(1);
-				}
+            	Client.textarea.setText("\n"+Client.textarea.getText()+"\n"+msg);
+
+			}catch(SocketException e){
+				e.printStackTrace();
+				System.exit(1);
+			}catch(IOException er){
+				er.printStackTrace();
+				System.exit(1);
 			}
+      
 			try{
 				Client.serverSocket.close();	
 			}catch(IOException e){}
