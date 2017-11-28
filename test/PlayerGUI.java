@@ -8,6 +8,7 @@ import java.net.InetAddress;
 public class PlayerGUI extends JPanel implements Runnable{
 	int xpos;
 	int ypos;
+	int namepos;
 	int playerid;
 	BufferedImage image;
 
@@ -16,7 +17,6 @@ public class PlayerGUI extends JPanel implements Runnable{
 
 	public PlayerGUI(String name, int initx, int inity, int playerid){
 		this.name = name;
-
 		this.xpos = initx;
 		this.ypos = inity;
 		this.playerid = playerid;
@@ -27,6 +27,12 @@ public class PlayerGUI extends JPanel implements Runnable{
 			e.printStackTrace();
 			System.exit(1);
 		}
+		if(name.length(	) > 5){
+			this.namepos = name.length()*2;
+		}else{
+			this.namepos = -10;
+		}
+
 		Thread t = new Thread(this);
 		t.start();
 	}
@@ -54,7 +60,8 @@ public class PlayerGUI extends JPanel implements Runnable{
 
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
-		g.drawImage(Assets.gameScreen, 0,0, null);
-		g.drawImage(this.image, ypos, xpos, null);
+		g.drawImage(this.image, this.ypos, this.xpos, null);
+		g.drawString(this.name, this.ypos-this.namepos, this.xpos+65);
 	}
+
 }

@@ -90,9 +90,8 @@ public class Client implements Runnable{
 		catch(UnknownHostException e){e.printStackTrace();System.exit(1);}
 		catch(IOException e){e.printStackTrace();System.exit(1);}
 
+		new Assets();
 		t.start();
-	
-		
 		
 	}
 
@@ -119,7 +118,7 @@ public class Client implements Runnable{
 			}
 
 			serverData = new String(packet.getData());
-			System.out.println("serverData: " + serverData);
+			// System.out.println("serverData: " + serverData.trim());
 			
 			if (!connected && serverData.startsWith("ID")){
 				connected = true;
@@ -133,6 +132,7 @@ public class Client implements Runnable{
 				System.out.println("You have joined the game.");
 			} else if (connected) {
 				if (serverData.startsWith("GAME START")){
+					System.out.println("\nGAME START!\n");
 					CardLayout p = (CardLayout)screenDeck.getLayout();
 					p.show(screenDeck, "GAME");
 					leaderboard.requestFocus();
@@ -150,9 +150,22 @@ public class Client implements Runnable{
 					int y = Integer.parseInt(playerInfo[3].trim());
 				
 
-					System.out.println("MOVE " + playerInfo[1]+ playerInfo[2] + playerInfo[3]);
+					System.out.println("MOVE " + pID + " " + x + " " + y);
 					players[pID].setPos(x,y);
 					// change UI
+				} else if (serverData.startsWith("FIRE")){
+					String[] playerInfo = serverData.split(" ");
+
+					int pID =  Integer.parseInt(playerInfo[1].trim());
+					int x = Integer.parseInt(playerInfo[2].trim());
+					int y = Integer.parseInt(playerInfo[3].trim());
+				
+
+					System.out.println("FIRE " + pID + " " + x + " " + y);
+					arrows[pID].setPos(y,x);
+					// change UI
+				} else{
+					System.out.println(serverData.trim());
 				}
 			}
 		}
@@ -272,26 +285,28 @@ public class Client implements Runnable{
 		infoBox.add(info, BorderLayout.EAST);
 
 		movementBox = new OverlaidField();
-
 		movementBox.setPreferredSize(new Dimension(900, 520));
+		
 		// Player player1 = new Player(450, 20,1);
 		
 		players = new PlayerGUI[maxPlayers];
 		arrows = new Arrow[maxPlayers];
 
+		System.out.print("Adding Players: [");
 		for(int i=0;i<maxPlayers;i++){
+			System.out.print("#");
 
-			PlayerGUI player = new PlayerGUI(name, 450, 20*(i+1), i);
+			players[i] = new PlayerGUI(name, 450, 20*(i+1), i);
+			movementBox.add(players[i]);
+				
+			arrows[i] = new Arrow(i, -900,-900, true);
+			movementBox.add(arrows[i]);
+
 			xpos = 450;
 			ypos = 20*(i+1);
-			movementBox.add(player);
-			
-			players[i] = player;
-			
-			Arrow parrow = new Arrow(i, -900,-900, true);
-			movementBox.add(parrow);
-			arrows[i] = parrow;
 		}
+		System.out.println("] 100%");
+
 
 		kaks = new Kakamora[4][19];
 
@@ -302,7 +317,8 @@ public class Client implements Runnable{
 			}
 		}
 		
-
+		movementBox.setOpaque(false);
+		infoBox.setOpaque(false);
 		gameScreen.add(movementBox, BorderLayout.NORTH);
 		gameScreen.add(infoBox, BorderLayout.SOUTH);
 
@@ -335,20 +351,15 @@ public class Client implements Runnable{
 		leaderboard.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent ke) {}
 			public void keyTyped(KeyEvent ke) {
-				try{
-					if(ke.getKeyChar() == KeyEvent.VK_1){
-						// player.moveLeft();
-						moveLeft();
-						send("MOVE " + playerID + " " + xpos + " " + ypos);
-					}else if(ke.getKeyChar() == KeyEvent.VK_0){
-						// player.moveRight();
-						moveRight();
-						send("MOVE " + playerID + " " + xpos + " " + ypos);
-					}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
-						// parrow.setpos(player.ypos,player.xpos);
-						out.writeUTF(name+"> FIRE");
-					}
-				}catch(IOException e){}
+				if(ke.getKeyChar() == KeyEvent.VK_1){
+					moveLeft();
+					send("MOVE " + playerID + " " + xpos + " " + ypos);
+				}else if(ke.getKeyChar() == KeyEvent.VK_0){
+					moveRight();
+					send("MOVE " + playerID + " " + xpos + " " + ypos);
+				}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
+					send("FIRE " + playerID + " " + xpos + " " + ypos);
+				}
 			}
 			public void keyReleased(KeyEvent ke) {}
 		});
@@ -427,71 +438,4 @@ public class Client implements Runnable{
 
 	}
 
-}
-
-
-class ChatClient{
-	private ObjectInputStream in;
-	private ObjectOutputStream out;
-	private Socket socket;
-	private String server;
-	private String name;
-	private int port;
-
-	ChatClient(String server, int port, String name) {
-		port = port+10;
-		this.server = server;
-		this.port = port;
-		this.name = name;
-
-		try {
-			socket = new Socket(server, port);
-		}catch(Exception e) {e.printStackTrace();System.exit(1);}
-
-		System.out.println("Chat connection established at " + socket.getInetAddress() + ":" + socket.getPort());
-		try{
-			in  = new ObjectInputStream(socket.getInputStream());
-			out = new ObjectOutputStream(socket.getOutputStream());
-		}catch(Exception e) {e.printStackTrace();System.exit(1);}
-		
-		new ListenFromServer().start();
-
-		try{
-			out.writeObject(name);
-		}catch(IOException e) {e.printStackTrace();System.exit(1);}
-	}
-
-	private void display(String msg) {
-		System.out.println(msg);
-	}
-	
-	public void sendMessage(ChatMessage msg) {
-		try {
-			out.writeObject(msg);
-		}catch(IOException e) {e.printStackTrace();System.exit(1);}
-	}
-
-	private void disconnect() {
-		try { 
-			if(in != null) in.close();
-			if(out != null) out.close();
-			if(socket != null) socket.close();
-		}catch(Exception e) {e.printStackTrace();System.exit(1);}
-	}
-
-
-	class ListenFromServer extends Thread {
-		public void run() {
-			System.out.println("Started Chat Listener Thread.");
-			while(true) {
-				try {
-					String msg = (String) in.readObject();
-					System.out.println(msg);
-					Client.textarea.setText(Client.textarea.getText() + msg);
-				}
-				catch(IOException e) {e.printStackTrace();System.exit(1);}
-				catch(ClassNotFoundException e) {e.printStackTrace();System.exit(1);}
-			}
-		}
-	}
 }

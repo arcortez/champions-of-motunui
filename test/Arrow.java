@@ -43,7 +43,7 @@ public class Arrow extends JPanel implements Runnable{
 	}
 
 	
-	public void setpos(int x, int y){
+	public void setPos(int x, int y){
 		if(this.ypos <= -20){
 			this.xpos = x;
 			this.ypos = y;

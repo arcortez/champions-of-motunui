@@ -24,9 +24,9 @@ public class Assets {
 
     // start = new JButton(new ImageIcon(filename_source));
 
-    Assets() {
+    Assets(){
+        System.out.print("Loading assets: [");
        imMoana = loadImage("moana");
-
 
        background = loadImage("screen");
        gameScreen = loadImage("gamescreen");
@@ -40,16 +40,18 @@ public class Assets {
        countdown_1 = loadImage("countdown_1");
        countdown_2 = loadImage("countdown_2");
        countdown_3 = loadImage("countdown_3");
-
+       System.out.println("] 100%");
     }
 
     public static BufferedImage loadImage(String filename) {
         try {
+          System.out.print("#");
             return ImageIO.read(new File("../assets/"+filename+".png"));
         } catch(IOException e) {
             e.printStackTrace();
             System.exit(1);
         }
+        System.out.print("!");
         return null;
     }
 }
