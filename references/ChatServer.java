@@ -4,14 +4,14 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 
-public class Server {
+public class ChatServer {
 	private static int uniqueId;
 	private ArrayList<ClientThread> al;
 	private SimpleDateFormat sdf;
 	private int port;
 	private boolean keepGoing;
 
-	public Server(int port) {
+	public ChatServer(int port) {
 		this.port = port;
 		al = new ArrayList<ClientThread>();
 	}

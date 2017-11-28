@@ -3,6 +3,7 @@ import java.io.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 
 import javax.imageio.ImageIO;
 
@@ -19,6 +20,7 @@ public class Client implements Runnable{
 
 	private static DataOutputStream out;
 	private static DataInputStream in;
+	private static ChatClient cclient;
 
 	//variables for GUI
 	private static JPanel screenDeck = new JPanel(new CardLayout());
@@ -316,11 +318,7 @@ public class Client implements Runnable{
 		sendButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				if(message.getText().length() > 0){
-					try{
-						out.writeUTF(name + ": " + message.getText());
-					}catch(IOException er){
-						er.printStackTrace();
-					}
+					cclient.sendMessage(new ChatMessage(message.getText()));
 					message.setText("");
 				}
 				leaderboard.requestFocus();
@@ -415,7 +413,8 @@ public class Client implements Runnable{
 			String name = args[2];
 			//usage: java Client <ip address of server> <port number> <name of player>		
 			Client client = new Client(serverIP, port, name);
-	        ChatListener listen = new ChatListener();
+			cclient = new ChatClient(serverIP, port, name);
+
 
 		}catch(ArrayIndexOutOfBoundsException e){
             System.out.println("Usage: java GreetingClient <server ip> <port no.> <your name>");
@@ -428,33 +427,71 @@ public class Client implements Runnable{
 
 	}
 
-
 }
 
-class ChatListener implements Runnable{
-	public ChatListener(){
-		Thread t = new Thread(this);
-		t.start();
+
+class ChatClient{
+	private ObjectInputStream in;
+	private ObjectOutputStream out;
+	private Socket socket;
+	private String server;
+	private String name;
+	private int port;
+
+	ChatClient(String server, int port, String name) {
+		port = port+10;
+		this.server = server;
+		this.port = port;
+		this.name = name;
+
+		try {
+			socket = new Socket(server, port);
+		}catch(Exception e) {e.printStackTrace();System.exit(1);}
+
+		System.out.println("Chat connection established at " + socket.getInetAddress() + ":" + socket.getPort());
+		try{
+			in  = new ObjectInputStream(socket.getInputStream());
+			out = new ObjectOutputStream(socket.getOutputStream());
+		}catch(Exception e) {e.printStackTrace();System.exit(1);}
+		
+		new ListenFromServer().start();
+
+		try{
+			out.writeObject(name);
+		}catch(IOException e) {e.printStackTrace();System.exit(1);}
 	}
 
-	public void run(){
-		boolean connected = true;
-		while(connected){
-				try{
-					InputStream inFromServer = Client.serverSocket.getInputStream();
-					DataInputStream in = new DataInputStream(inFromServer);
-					String msg = in.readUTF();
-					Client.textarea.setText(Client.textarea.getText()+"\n"+msg);
-				}catch(SocketException e){
-					e.printStackTrace();
-					System.exit(1);
-				}catch(IOException er){
-					er.printStackTrace();
-					System.exit(1);
+	private void display(String msg) {
+		System.out.println(msg);
+	}
+	
+	public void sendMessage(ChatMessage msg) {
+		try {
+			out.writeObject(msg);
+		}catch(IOException e) {e.printStackTrace();System.exit(1);}
+	}
+
+	private void disconnect() {
+		try { 
+			if(in != null) in.close();
+			if(out != null) out.close();
+			if(socket != null) socket.close();
+		}catch(Exception e) {e.printStackTrace();System.exit(1);}
+	}
+
+
+	class ListenFromServer extends Thread {
+		public void run() {
+			System.out.println("Started Chat Listener Thread.");
+			while(true) {
+				try {
+					String msg = (String) in.readObject();
+					System.out.println(msg);
+					Client.textarea.setText(Client.textarea.getText() + msg);
 				}
+				catch(IOException e) {e.printStackTrace();System.exit(1);}
+				catch(ClassNotFoundException e) {e.printStackTrace();System.exit(1);}
 			}
-			try{
-				Client.serverSocket.close();	
-			}catch(IOException e){}
+		}
 	}
 }
