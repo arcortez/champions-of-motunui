@@ -392,7 +392,6 @@ public class Client implements Runnable{
 			byte[] buf = msg.getBytes();
 			InetAddress address = InetAddress.getByName(serverIP);
 			DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
-			System.out.println("SEND");
 			socket.send(packet);
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -445,9 +444,6 @@ class ChatListener implements Runnable{
 					InputStream inFromServer = Client.serverSocket.getInputStream();
 					DataInputStream in = new DataInputStream(inFromServer);
 					String msg = in.readUTF();
-
-					System.out.println(msg);
-
 					Client.textarea.setText(Client.textarea.getText()+"\n"+msg);
 				}catch(SocketException e){
 					e.printStackTrace();

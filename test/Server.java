@@ -182,7 +182,6 @@ class ChatServer implements Runnable{
 					if(Server.clients[i] != null){
 						Server.in = new DataInputStream(Server.clients[i].getInputStream());
 						String msg = Server.in.readUTF();
-	        			System.out.println(msg); 	
 	        			for(int j=0;j<Server.maxPlayers;j++){
 							if(Server.clients[j] != null){
 								Server.out = new DataOutputStream(Server.clients[j].getOutputStream());
