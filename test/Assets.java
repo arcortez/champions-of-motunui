@@ -2,6 +2,13 @@ import java.io.*;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics;
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+
+import java.awt.Font;
+
 
 public class Assets {
     static BufferedImage imMoana;
@@ -53,6 +60,34 @@ public class Assets {
         }
         System.out.print("!");
         return null;
+    }
+
+    public static void playSound(String filename, boolean repeat) {
+      try {
+        AudioInputStream ais = AudioSystem.getAudioInputStream(new File("../sounds/"+filename+".wav"));
+        DataLine.Info info = new DataLine.Info(Clip.class, ais.getFormat());
+        Clip clip = (Clip) AudioSystem.getLine(info);
+        clip.open(ais);
+        if(repeat)
+          clip.loop(Clip.LOOP_CONTINUOUSLY);
+        else
+          clip.start();
+      } catch(Exception e) {
+        e.printStackTrace();
+        System.exit(1);
+      }
+    }
+
+    public static Font createFont(String filename, float size){
+      try{
+          FileInputStream input = new FileInputStream(new File("../fonts/" + filename));
+          Font font = Font.createFont(Font.TRUETYPE_FONT, input);
+          Font namesFont = font.deriveFont(size);
+          return namesFont;
+      }catch(Exception e){
+        System.exit(1);
+      };
+      return null;
     }
 }
 

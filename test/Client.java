@@ -44,6 +44,7 @@ public class Client implements Runnable{
 	private static JLabel tutorialImage;
 
 	private static OverlaidField movementBox; //actual game field
+	private static ScoreKeeper scoreKeeper;
 
 	private static JPanel tutorialScreen; //tutorial screens
 	private static JPanel southTutorial;
@@ -244,6 +245,7 @@ public class Client implements Runnable{
 		chatBox = new JPanel();
 		chatBox.setLayout(new BorderLayout());
 		textarea = new JTextArea("WELCOME TO THE CHAT ROOM!\n");
+		textarea.setFont(textarea.getFont().deriveFont(14f));
 		textarea.setEditable(false);
 		
 		pane = new JScrollPane(textarea);
@@ -307,6 +309,8 @@ public class Client implements Runnable{
 		}
 		System.out.println("] 100%");
 
+		scoreKeeper = new ScoreKeeper();
+		movementBox.add(scoreKeeper);
 
 		kaks = new Kakamora[4][19];
 
