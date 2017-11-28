@@ -145,26 +145,7 @@ public class ChatServer {
 				}
 				// the messaage part of the ChatMessage
 				String message = cm.getMessage();
-
-				// Switch on the type of message receive
-				switch(cm.getType()) {
-
-				case ChatMessage.MESSAGE:
-					broadcast(username + ": " + message);
-					break;
-				case ChatMessage.LOGOUT:
-					display(username + " disconnected with a LOGOUT message.");
-					keepGoing = false;
-					break;
-				case ChatMessage.WHOISIN:
-					writeMsg("List of the users connected at " + sdf.format(new Date()) + "\n");
-					// scan al the users connected
-					for(int i = 0; i < al.size(); ++i) {
-						ClientThread ct = al.get(i);
-						writeMsg((i+1) + ") " + ct.username + " since " + ct.date);
-					}
-					break;
-				}
+				broadcast(username + ": " + message);
 			}
 			// remove myself from the arrayList containing the list of the
 			// connected Clients
