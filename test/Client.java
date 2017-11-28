@@ -360,7 +360,7 @@ public class Client implements Runnable{
 			public void actionPerformed(ActionEvent e){
 				if(currentTutorialScreen >= 4){
 					CardLayout p = (CardLayout)screenDeck.getLayout();
-					p.show(screenDeck, "GAME");
+					p.show(screenDeck, "WAITING");
 				}
 				currentTutorialScreen += 1;
 				tutorialImage.setIcon(new ImageIcon("../assets/tutorial"+ currentTutorialScreen +".png"));
