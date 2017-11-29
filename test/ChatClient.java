@@ -2,131 +2,67 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 
-/*
- * The Client that can be run both as a console or a GUI
- */
-public class ChatClient  {
-
-	// for I/O
-	private ObjectInputStream sInput;		// to read from the socket
-	private ObjectOutputStream sOutput;		// to write on the socket
+public class ChatClient{
+	private ObjectInputStream in;
+	private ObjectOutputStream out;
 	private Socket socket;
-	
-	// the server, the port and the username
-	private String server, username;
+	private String server;
+	private String name;
 	private int port;
 
-	/*
-	 * Constructor call when used from a GUI
-	 * in console mode the ClienGUI parameter is null
-	 */
-	ChatClient(String server, int port, String username) {
+	ChatClient(String server, int port, String name) {
+		port = port+10;
 		this.server = server;
 		this.port = port;
-		this.username = username;
-	}
-	
-	/*
-	 * To start the dialog
-	 */
-	public boolean start() {
-		// try to connect to the server
+		this.name = name;
+
 		try {
 			socket = new Socket(server, port);
-		} 
-		// if it failed not much I can so
-		catch(Exception ec) {
-			display("Error connectiong to server:" + ec);
-			return false;
-		}
-		
-		String msg = "Connection accepted " + socket.getInetAddress() + ":" + socket.getPort();
-		display(msg);
-	
-		/* Creating both Data Stream */
-		try
-		{
-			sInput  = new ObjectInputStream(socket.getInputStream());
-			sOutput = new ObjectOutputStream(socket.getOutputStream());
-		}
-		catch (IOException eIO) {
-			display("Exception creating new Input/output Streams: " + eIO);
-			return false;
-		}
+		}catch(Exception e) {e.printStackTrace();System.exit(1);}
 
-		// creates the Thread to listen from the server 
+		System.out.println("Chat connection established at " + socket.getInetAddress() + ":" + socket.getPort());
+		try{
+			in  = new ObjectInputStream(socket.getInputStream());
+			out = new ObjectOutputStream(socket.getOutputStream());
+		}catch(Exception e) {e.printStackTrace();System.exit(1);}
+		
 		new ListenFromServer().start();
-		// Send our username to the server this is the only message that we
-		// will send as a String. All other messages will be ChatMessage objects
-		try
-		{
-			sOutput.writeObject(username);
-		}
-		catch (IOException eIO) {
-			display("Exception doing login : " + eIO);
-			disconnect();
-			return false;
-		}
-		// success we inform the caller that it worked
-		return true;
+
+		try{
+			out.writeObject(name);
+		}catch(IOException e) {e.printStackTrace();System.exit(1);}
 	}
 
-	/*
-	 * To send a message to the console or the GUI
-	 */
 	private void display(String msg) {
 		System.out.println(msg);
 	}
 	
-	/*
-	 * To send a message to the server
-	 */
-	void sendMessage(ChatMessage msg) {
+	public void sendMessage(ChatMessage msg) {
 		try {
-			sOutput.writeObject(msg);
-		}
-		catch(IOException e) {
-			display("Exception writing to server: " + e);
-		}
+			out.writeObject(msg);
+		}catch(IOException e) {e.printStackTrace();System.exit(1);}
 	}
 
-	/*
-	 * When something goes wrong
-	 * Close the Input/Output streams and disconnect not much to do in the catch clause
-	 */
 	private void disconnect() {
 		try { 
-			if(sInput != null) sInput.close();
-		}
-		catch(Exception e) {} // not much else I can do
-		try {
-			if(sOutput != null) sOutput.close();
-		}
-		catch(Exception e) {} // not much else I can do
-        try{
+			if(in != null) in.close();
+			if(out != null) out.close();
 			if(socket != null) socket.close();
-		}
-		catch(Exception e) {} // not much else I can do
-		
+		}catch(Exception e) {e.printStackTrace();System.exit(1);}
 	}
 
-	class ListenFromServer extends Thread {
 
+	class ListenFromServer extends Thread {
 		public void run() {
+			System.out.println("Started Chat Listener Thread.");
 			while(true) {
 				try {
-					String msg = (String) sInput.readObject();
-					// if console mode print the message and add back the prompt
+					String msg = (String) in.readObject();
 					System.out.println(msg);
-					
+					Client.textarea.setText(Client.textarea.getText() + msg);
 				}
-				catch(IOException e) {
-					e.printStackTrace();					
-					break;
-				}
-				// can't happen with a String object but need the catch anyhow
-				catch(ClassNotFoundException e2) {
-				}
+				catch(IOException e) {e.printStackTrace();System.exit(1);}
+				catch(ClassNotFoundException e) {e.printStackTrace();System.exit(1);}
 			}
 		}
 	}

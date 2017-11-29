@@ -44,7 +44,6 @@ public class Client implements Runnable{
 	private static JLabel tutorialImage;
 
 	private static OverlaidField movementBox; //actual game field
-	private static ScoreKeeper scoreKeeper;
 
 	private static JPanel tutorialScreen; //tutorial screens
 	private static JPanel southTutorial;
@@ -187,20 +186,19 @@ public class Client implements Runnable{
 		southTutorial = new JPanel();
 		southTutorial.setOpaque(false);
 		skipTutorial = new JButton("SKIP TUTORIAL");
-		// skipTutorial = new JButton(new ImageIcon("../assets/skip-n.png"));
-		// skipTutorial.setRolloverIcon(new ImageIcon("../assets/skip-h.png"));
-		// skipTutorial.setPressedIcon(new ImageIcon("../assets/skip-c.png"));
-		// skipTutorial.setContentAreaFilled(false);
-		// skipTutorial.setBorderPainted(false);
-		// skipTutorial.setMargin(new Insets(0,0,0,0));
+		skipTutorial = new JButton(new ImageIcon("../assets/skip-n.png"));
+		skipTutorial.setRolloverIcon(new ImageIcon("../assets/skip-h.png"));
+		skipTutorial.setPressedIcon(new ImageIcon("../assets/skip-c.png"));
+		skipTutorial.setContentAreaFilled(false);
+		skipTutorial.setBorderPainted(false);
+		skipTutorial.setMargin(new Insets(0,0,0,0));
 
-		prev = new JButton("< Prev");
-		// prev = new JButton(new ImageIcon("../assets/prev-n.png"));
-		// prev.setRolloverIcon(new ImageIcon("../assets/prev-h.png"));
-		// prev.setPressedIcon(new ImageIcon("../assets/prev-c.png"));
-		// prev.setContentAreaFilled(false);
-		// prev.setBorderPainted(false);
-		// prev.setMargin(new Insets(0,0,0,0));
+		prev = new JButton(new ImageIcon("../assets/prev-n.png"));
+		prev.setRolloverIcon(new ImageIcon("../assets/prev-h.png"));
+		prev.setPressedIcon(new ImageIcon("../assets/prev-c.png"));
+		prev.setContentAreaFilled(false);
+		prev.setBorderPainted(false);
+		prev.setMargin(new Insets(0,0,0,0));
 
 
 		next = new JButton(new ImageIcon("../assets/next-n.png"));
@@ -225,6 +223,13 @@ public class Client implements Runnable{
 		waitingScreen.setLayout(new BorderLayout());
 		waitingScreen.add(new JLabel(new ImageIcon("../assets/waiting.png")), BorderLayout.NORTH);
 		readyButton = new JButton("READY!!");
+		readyButton = new JButton(new ImageIcon("../assets/ready-n.png"));
+		readyButton.setRolloverIcon(new ImageIcon("../assets/ready-h.png"));
+		readyButton.setPressedIcon(new ImageIcon("../assets/ready-c.png"));
+		readyButton.setContentAreaFilled(false);
+		readyButton.setBorderPainted(false);
+		readyButton.setMargin(new Insets(0,0,0,0));
+		
 		waitingScreen.add(readyButton, BorderLayout.SOUTH);
 
 		readyButton.addActionListener(new ActionListener(){
@@ -245,7 +250,6 @@ public class Client implements Runnable{
 		chatBox = new JPanel();
 		chatBox.setLayout(new BorderLayout());
 		textarea = new JTextArea("WELCOME TO THE CHAT ROOM!\n");
-		textarea.setFont(textarea.getFont().deriveFont(14f));
 		textarea.setEditable(false);
 		
 		pane = new JScrollPane(textarea);
@@ -255,7 +259,12 @@ public class Client implements Runnable{
 		messageBox = new JPanel();
 		messageBox.setLayout(new BorderLayout());
 		message = new JTextField();
-		sendButton = new JButton("Send!");
+		sendButton = new JButton(new ImageIcon("../assets/send-n.png"));
+		sendButton.setRolloverIcon(new ImageIcon("../assets/send-h.png"));
+		sendButton.setPressedIcon(new ImageIcon("../assets/send-c.png"));
+		sendButton.setContentAreaFilled(false);
+		sendButton.setBorderPainted(false);
+		sendButton.setMargin(new Insets(0,0,0,0));
 		
 		messageBox.add(new JLabel("You:"), BorderLayout.WEST);
 		message.setPreferredSize(new Dimension(350,20));
@@ -269,7 +278,12 @@ public class Client implements Runnable{
 		info = new JPanel();
 		info.setLayout(new BorderLayout());
 		lifePanel = new JPanel();
-		focus = new JButton("FOCUS!");
+		focus = new JButton(new ImageIcon("../assets/focus-n.png"));
+		focus.setRolloverIcon(new ImageIcon("../assets/focus-h.png"));
+		focus.setPressedIcon(new ImageIcon("../assets/focus-c.png"));
+		focus.setContentAreaFilled(false);
+		focus.setBorderPainted(false);
+		focus.setMargin(new Insets(0,0,0,0));
 		
 		lifePanel.add(new JLabel("Lives left:"), BorderLayout.WEST);
 		lives = new JTextField("3");
@@ -309,8 +323,6 @@ public class Client implements Runnable{
 		}
 		System.out.println("] 100%");
 
-		scoreKeeper = new ScoreKeeper();
-		movementBox.add(scoreKeeper);
 
 		kaks = new Kakamora[4][19];
 

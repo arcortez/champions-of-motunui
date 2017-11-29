@@ -1,27 +1,22 @@
-import java.io.*;
 import java.net.*;
-import java.text.SimpleDateFormat;
+import java.io.*;
 import java.util.*;
 
-
-public class ChatServer {
+public class ChatServer{
 	private static int uniqueId;
 	private ArrayList<ClientThread> al;
-	private SimpleDateFormat sdf;
 	private int port;
-	private boolean keepGoing;
+	private boolean connected;
 
 	public ChatServer(int port) {
 		this.port = port;
 		al = new ArrayList<ClientThread>();
-	}
-	
-	public void start() {
-		keepGoing = true;
+
+		connected = true;
 		try{
-			ServerSocket serverSocket = new ServerSocket(port);
-			while(keepGoing){
-				display("Server waiting for Clients on port " + port + ".");
+			ServerSocket serverSocket = new ServerSocket(port+10);
+			while(connected){
+				System.out.println("Server waiting for Clients on port " + port + ".");
 				
 				Socket socket = serverSocket.accept();
 			
@@ -29,13 +24,13 @@ public class ChatServer {
 				al.add(t);
 				t.start();
 			}
-			try {
+			try{
 				serverSocket.close();
 				for(int i=0;i<al.size();i++){
 					ClientThread tc = al.get(i);
 					try{
-						tc.sInput.close();
-						tc.sOutput.close();
+						tc.in.close();
+						tc.out.close();
 						tc.socket.close();
 					}
 					catch(IOException err){
@@ -43,33 +38,18 @@ public class ChatServer {
 						System.exit(1);
 					}
 				}
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
-		}
-		catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-		}
-	}		
-    
-
-	private void display(String msg) {
-		System.out.println(msg+"\n");
+			}catch(Exception e) {e.printStackTrace();System.exit(1);}
+		}catch(Exception e) {e.printStackTrace();System.exit(1);}
 	}
 
 	private synchronized void broadcast(String message) {
 		System.out.print(message);
-		// we loop in reverse order in case we would have to remove a Client
-		// because it has disconnected
+
 		for(int i = al.size(); --i >= 0;) {
 			ClientThread ct = al.get(i);
-			// try to write to the Client if it fails remove it from the list
-			if(!ct.writeMsg(message)) {
+			if(!ct.writemsg(message)) {
 				al.remove(i);
-				display("Disconnected Client " + ct.username + " removed from list.");
+				System.out.println("Disconnected Client " + ct.name + " removed from list.");
 			}
 		}
 	}
@@ -85,102 +65,52 @@ public class ChatServer {
 		}
 	}
 	
-	/** One instance of this thread will run for each client */
+	//one instance of this will run for each client
 	class ClientThread extends Thread {
-		// the socket where to listen/talk
 		Socket socket;
-		ObjectInputStream sInput;
-		ObjectOutputStream sOutput;
-		// my unique id (easier for deconnection)
+		ObjectInputStream in;
+		ObjectOutputStream out;
 		int id;
-		// the Username of the Client
-		String username;
-		// the only type of message a will receive
+		String name;
 		ChatMessage cm;
-		// the date I connect
-		String date;
 
-		// Constructore
 		ClientThread(Socket socket) {
-			// a unique id
 			id = ++uniqueId;
 			this.socket = socket;
-			/* Creating both Data Stream */
-			System.out.println("Thread trying to create Object Input/Output Streams");
 			try
 			{
-				// create output first
-				sOutput = new ObjectOutputStream(socket.getOutputStream());
-				sInput  = new ObjectInputStream(socket.getInputStream());
-				// read the username
-				username = (String) sInput.readObject();
-				display(username + " just connected.");
+				out = new ObjectOutputStream(socket.getOutputStream());
+				in  = new ObjectInputStream(socket.getInputStream());
+
+				name = (String) in.readObject();
+				System.out.println(name + " just connected.");
 			}
-			catch (IOException e) {
-				display("Exception creating new Input/output Streams: " + e);
-				return;
-			}
-			// have to catch ClassNotFoundException
-			// but I read a String, I am sure it will work
-			catch (ClassNotFoundException e) {
-			}
-            date = new Date().toString() + "\n";
+			catch (IOException e){e.printStackTrace();System.exit(1);}
+			catch (ClassNotFoundException e){e.printStackTrace();System.exit(1);}
 		}
 
-		// what will run forever
 		public void run() {
-			// to loop until LOGOUT
-			boolean keepGoing = true;
-			while(keepGoing) {
-				// read a String (which is an object)
+			boolean connected = true;
+			while(connected) {
 				try {
-					cm = (ChatMessage) sInput.readObject();
+					cm = (ChatMessage) in.readObject();
 				}
-				catch (IOException e) {
-					display(username + " Exception reading Streams: " + e);
-					break;				
-				}
-				catch(ClassNotFoundException e2) {
-					break;
-				}
-				// the messaage part of the ChatMessage
+				catch (IOException e){e.printStackTrace();System.exit(1);}
+				catch(ClassNotFoundException err){err.printStackTrace();System.exit(1);}
+
 				String message = cm.getMessage();
-
-				// Switch on the type of message receive
-				switch(cm.getType()) {
-
-				case ChatMessage.MESSAGE:
-					broadcast(username + ": " + message);
-					break;
-				case ChatMessage.LOGOUT:
-					display(username + " disconnected with a LOGOUT message.");
-					keepGoing = false;
-					break;
-				case ChatMessage.WHOISIN:
-					writeMsg("List of the users connected at " + sdf.format(new Date()) + "\n");
-					// scan al the users connected
-					for(int i = 0; i < al.size(); ++i) {
-						ClientThread ct = al.get(i);
-						writeMsg((i+1) + ") " + ct.username + " since " + ct.date);
-					}
-					break;
-				}
+				broadcast(name + ": " + message + "\n");
 			}
-			// remove myself from the arrayList containing the list of the
-			// connected Clients
-			remove(id);
 			close();
 		}
 		
-		// try to close everything
 		private void close() {
-			// try to close the connection
 			try {
-				if(sOutput != null) sOutput.close();
+				if(out != null) out.close();
 			}
 			catch(Exception e) {}
 			try {
-				if(sInput != null) sInput.close();
+				if(in != null) in.close();
 			}
 			catch(Exception e) {};
 			try {
@@ -189,23 +119,16 @@ public class ChatServer {
 			catch (Exception e) {}
 		}
 
-		/*
-		 * Write a String to the Client output stream
-		 */
-		private boolean writeMsg(String msg) {
-			// if Client is still connected send the message to it
+		
+		private boolean writemsg(String msg) {
 			if(!socket.isConnected()) {
 				close();
 				return false;
 			}
-			// write the message to the stream
 			try {
-				sOutput.writeObject(msg);
-			}
-			// if an error occurs, do not abort just inform the user
-			catch(IOException e) {
-				display("Error sending message to " + username);
-				display(e.toString());
+				out.writeObject(msg);
+			}catch(IOException e) {
+				e.printStackTrace();
 			}
 			return true;
 		}
