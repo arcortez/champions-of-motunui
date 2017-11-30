@@ -21,7 +21,7 @@ public class Kakamora extends JPanel implements Runnable{
 		this.isHit = false;
 		this.setOpaque(false);
 		try {
-			this.image = ImageIO.read(new File("kakamora"+type+".png"));	
+			this.image = ImageIO.read(new File("../assets/kakamora"+type+".png"));	
 		} catch(IOException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -29,97 +29,48 @@ public class Kakamora extends JPanel implements Runnable{
 	}
 
 	public void run(){
-		while(this.xpos <= 650 && isHit == false) {
+		while(this.xpos <= 550 && this.isHit == false) {
+			if(this.isHit == true) break;
 			try {
-				if(this.type == 1){
-					for(int i=0;i<4;i++){
-						this.ypos += 5;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos += 5;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos += 5;
-						this.repaint();
-						Thread.sleep(300);
+				for(int i=this.type;i<this.type+12;i++){
+					if(i%6 == 0){
 						this.ypos -= 5;
-						this.repaint();
-						Thread.sleep(300);
+						Thread.sleep(500);
+					}else if(i%6 == 1){
 						this.ypos -= 5;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos -= 5;
-						this.repaint();
-						Thread.sleep(300);
-					}
-				}else if(this.type == 2){
-					for(int i=0;i<4;i++){
-						this.ypos -= 5;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos -= 5;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos -= 5;
-						this.repaint();
-						Thread.sleep(300);
+						Thread.sleep(500);
+					}else if(i%6 == 2){
 						this.ypos += 5;
-						this.repaint();
-						Thread.sleep(300);
+						Thread.sleep(500);
+					}else if(i%6 == 3){
 						this.ypos += 5;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos += 5;
-						this.repaint();
-						Thread.sleep(300);
-					}
-				}else if(this.type == 3){
-					for(int i=0;i<4;i++){
-						this.ypos += 5;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos -= 10;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos += 10;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos += 5;
-						this.repaint();
-						Thread.sleep(300);
+						Thread.sleep(500);
+					}else if(i%6 == 4){
 						this.ypos -= 5;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos -= 5;
-						this.repaint();
-						Thread.sleep(300);
-					}
-				}else{
-					for(int i=0;i<4;i++){
+						Thread.sleep(500);
+					}else if(i%6 == 5){
 						this.ypos += 5;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos += 5;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos += 5;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos -= 5;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos -= 5;
-						this.repaint();
-						Thread.sleep(300);
-						this.ypos -= 5;
-						this.repaint();
-						Thread.sleep(300);
+						Thread.sleep(500);
 					}
 				}
-				this.xpos += 15;
-			} catch(Exception e) { 
-			}
+			}catch(Exception e){e.printStackTrace();System.exit(1);}
+			this.xpos += 20;
 		}
+
+		if(this.isHit == false){
+			Client.send("GAME OVER");
+		}
+	}
+
+
+	public boolean wasHit(){
+		return this.isHit;
+	}
+
+	public void hit(int playerArrowID){
+		this.isHit = true;
+		this.xpos = 1000;
+		this.ypos = 1000;
 	}
 
 	public void paintComponent(Graphics g){
@@ -135,4 +86,10 @@ public class Kakamora extends JPanel implements Runnable{
 	 	if(ypos <= 800)
 	 		this.ypos += 20;
 	}
+
+	public String toString(){
+		return "ID: " + this.id + " type: " + this.type + " x: " + this.xpos + " y: " + this.ypos;
+
+	}
+
 }

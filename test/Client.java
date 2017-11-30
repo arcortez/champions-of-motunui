@@ -23,6 +23,8 @@ public class Client implements Runnable{
 	private static ChatClient cclient;
 
 	//variables for GUI
+	private static JPanel wholeScreen = new JPanel();
+	private static JPanel chatScreen = new JPanel();
 	private static JPanel screenDeck = new JPanel(new CardLayout());
 	private static JFrame frame;
 	private static Container c;
@@ -44,7 +46,6 @@ public class Client implements Runnable{
 	private static JLabel tutorialImage;
 
 	private static OverlaidField movementBox; //actual game field
-	private static ScoreKeeper scoreKeeper;
 
 	private static JPanel tutorialScreen; //tutorial screens
 	private static JPanel southTutorial;
@@ -52,8 +53,13 @@ public class Client implements Runnable{
 	private static JButton prev;
 	private static JButton next;
 
+	/*private*/ static JTextField score;
+
 	private static JPanel waitingScreen;
 	private static JButton readyButton;
+
+	private static JPanel winScreen;
+	private static JPanel loseScreen;
 
 	private static int currentTutorialScreen = 0;
 
@@ -138,7 +144,7 @@ public class Client implements Runnable{
 					p.show(screenDeck, "GAME");
 					leaderboard.requestFocus();
 					for(int i=0;i<4;i++){
-						for (int j=0;j<19;j++) {
+						for (int j=0;j<14;j++) {
 							Thread t = new Thread(kaks[i][j]);
 							t.start();
 						}
@@ -165,6 +171,13 @@ public class Client implements Runnable{
 					System.out.println("FIRE " + pID + " " + x + " " + y);
 					arrows[pID].setPos(y,x);
 					// change UI
+				} else if (serverData.startsWith("GAME OVER")){
+					try{
+						Thread.sleep(2000);
+					}catch(InterruptedException e){e.printStackTrace();}
+					
+					CardLayout p = (CardLayout)screenDeck.getLayout();
+					p.show(screenDeck, "LOSE");
 				} else{
 					System.out.println(serverData.trim());
 				}
@@ -175,10 +188,11 @@ public class Client implements Runnable{
 	public void initGUI(int maxPlayers){
 		frame = new JFrame("Champions of Motunui : "+name);
 		c = frame.getContentPane();
-		frame.setPreferredSize(new Dimension(900,700));
+		frame.setPreferredSize(new Dimension(1100,700));
 		frame.setResizable(false);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+		wholeScreen.setLayout(new BorderLayout());
 
 		tutorialScreen = new JPanel();
 		gameScreen = new JPanel();
@@ -187,20 +201,19 @@ public class Client implements Runnable{
 		southTutorial = new JPanel();
 		southTutorial.setOpaque(false);
 		skipTutorial = new JButton("SKIP TUTORIAL");
-		// skipTutorial = new JButton(new ImageIcon("../assets/skip-n.png"));
-		// skipTutorial.setRolloverIcon(new ImageIcon("../assets/skip-h.png"));
-		// skipTutorial.setPressedIcon(new ImageIcon("../assets/skip-c.png"));
-		// skipTutorial.setContentAreaFilled(false);
-		// skipTutorial.setBorderPainted(false);
-		// skipTutorial.setMargin(new Insets(0,0,0,0));
+		skipTutorial = new JButton(new ImageIcon("../assets/skip-n.png"));
+		skipTutorial.setRolloverIcon(new ImageIcon("../assets/skip-h.png"));
+		skipTutorial.setPressedIcon(new ImageIcon("../assets/skip-c.png"));
+		skipTutorial.setContentAreaFilled(false);
+		skipTutorial.setBorderPainted(false);
+		skipTutorial.setMargin(new Insets(0,0,0,0));
 
-		prev = new JButton("< Prev");
-		// prev = new JButton(new ImageIcon("../assets/prev-n.png"));
-		// prev.setRolloverIcon(new ImageIcon("../assets/prev-h.png"));
-		// prev.setPressedIcon(new ImageIcon("../assets/prev-c.png"));
-		// prev.setContentAreaFilled(false);
-		// prev.setBorderPainted(false);
-		// prev.setMargin(new Insets(0,0,0,0));
+		prev = new JButton(new ImageIcon("../assets/prev-n.png"));
+		prev.setRolloverIcon(new ImageIcon("../assets/prev-h.png"));
+		prev.setPressedIcon(new ImageIcon("../assets/prev-c.png"));
+		prev.setContentAreaFilled(false);
+		prev.setBorderPainted(false);
+		prev.setMargin(new Insets(0,0,0,0));
 
 
 		next = new JButton(new ImageIcon("../assets/next-n.png"));
@@ -223,9 +236,16 @@ public class Client implements Runnable{
 		
 		waitingScreen = new JPanel();
 		waitingScreen.setLayout(new BorderLayout());
-		waitingScreen.add(new JLabel(new ImageIcon("../assets/waiting.png")), BorderLayout.NORTH);
 		readyButton = new JButton("READY!!");
+		readyButton = new JButton(new ImageIcon("../assets/ready-n.png"));
+		readyButton.setRolloverIcon(new ImageIcon("../assets/ready-h.png"));
+		readyButton.setPressedIcon(new ImageIcon("../assets/ready-c.png"));
+		readyButton.setContentAreaFilled(false);
+		readyButton.setBorderPainted(false);
+		readyButton.setMargin(new Insets(0,0,0,0));
+		
 		waitingScreen.add(readyButton, BorderLayout.SOUTH);
+		waitingScreen.add(new JLabel(new ImageIcon("../assets/waiting.png")), BorderLayout.NORTH);
 
 		readyButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
@@ -233,61 +253,100 @@ public class Client implements Runnable{
 				readyButton.setEnabled(false);
 			}
 		});
+		winScreen = new JPanel();
+		loseScreen = new JPanel();
+		winScreen.add(new JLabel("Yu WIN!"));
+		loseScreen.add(new JLabel("Yu Lose!"));
 
 		screenDeck.add(tutorialScreen, "TUTORIAL");		
 		screenDeck.add(waitingScreen, "WAITING");
 		screenDeck.add(gameScreen, "GAME");
+		screenDeck.add(winScreen, "WIN");
+		screenDeck.add(loseScreen, "LOSE");
 		gameScreen.setLayout(new BorderLayout());
 		
 
 		infoBox = new JPanel();
 		infoBox.setLayout(new BorderLayout());
+		infoBox.setOpaque(false);
 		chatBox = new JPanel();
 		chatBox.setLayout(new BorderLayout());
-		textarea = new JTextArea("WELCOME TO THE CHAT ROOM!\n");
-		textarea.setFont(textarea.getFont().deriveFont(14f));
+		textarea = new JTextArea("You have entered the chatroom.\n");
 		textarea.setEditable(false);
+		textarea.setBackground(Color.BLACK);
+		textarea.setForeground(Color.WHITE);
+		textarea.setFont(textarea.getFont().deriveFont(14f)); 
 		
+		JPanel upperBox = new JPanel();
+		upperBox.setLayout(new GridLayout(2,1));
+		JLabel lab = new JLabel(" Player #"+(playerID+1) +": "+name);
+		lab.setFont(lab.getFont().deriveFont(20f)); 
+		score = new JTextField("00000000");
+		score.setBorder(null);	
+		score.setFont(score.getFont().deriveFont(20f)); 
+		upperBox.add(lab);
+		upperBox.add(score);
+
+		chatBox.add(upperBox, BorderLayout.NORTH);
+
 		pane = new JScrollPane(textarea);
-		pane.setPreferredSize(new Dimension(450, 100));
-		chatBox.add(pane, BorderLayout.NORTH);
+		pane.setPreferredSize(new Dimension(100, 10));
+		chatBox.add(pane, BorderLayout.CENTER);
+		chatBox.setBackground(Color.WHITE);
+
 
 		messageBox = new JPanel();
 		messageBox.setLayout(new BorderLayout());
+		messageBox.setOpaque(false);
 		message = new JTextField();
-		sendButton = new JButton("Send!");
+		message.setPreferredSize(new Dimension(100,10));
+		sendButton = new JButton(new ImageIcon("../assets/send-n.png"));
+		sendButton.setRolloverIcon(new ImageIcon("../assets/send-h.png"));
+		sendButton.setPressedIcon(new ImageIcon("../assets/send-c.png"));
+		sendButton.setContentAreaFilled(false);
+		sendButton.setBorderPainted(false);
 		
 		messageBox.add(new JLabel("You:"), BorderLayout.WEST);
-		message.setPreferredSize(new Dimension(350,20));
 		messageBox.add(message, BorderLayout.CENTER);
 		messageBox.add(sendButton, BorderLayout.EAST);
 
 
-		chatBox.add(messageBox, BorderLayout.EAST);
-		infoBox.add(chatBox, BorderLayout.WEST);
+		chatBox.add(messageBox, BorderLayout.SOUTH);
+		infoBox.add(chatBox, BorderLayout.CENTER);
 
 		info = new JPanel();
 		info.setLayout(new BorderLayout());
 		lifePanel = new JPanel();
-		focus = new JButton("FOCUS!");
+		focus = new JButton(new ImageIcon("../assets/focus-n.png"));
+		focus.setRolloverIcon(new ImageIcon("../assets/focus-h.png"));
+		focus.setPressedIcon(new ImageIcon("../assets/focus-c.png"));
+		focus.setContentAreaFilled(false);
+		focus.setBorderPainted(false);
+		focus.setMargin(new Insets(0,0,0,0));
 		
-		lifePanel.add(new JLabel("Lives left:"), BorderLayout.WEST);
 		lives = new JTextField("3");
 		lives.setEditable(false);
+		lives.setFont(lives.getFont().deriveFont(35f)); 
+		lives.setForeground(Color.RED);
+		lives.setBorder(null);
 		lifePanel.add(lives, BorderLayout.WEST);
+		JLabel lab2 = new JLabel("Lives left.");
+		lab2.setFont(lab2.getFont().deriveFont(30f)); 
+		lifePanel.add(lab2, BorderLayout.WEST);
+
 		lifePanel.add(focus, BorderLayout.EAST);
 		info.add(lifePanel, BorderLayout.NORTH);
 
 		leaderboard = new JTextArea("LEADERBOARD:");
 		leadScroll = new JScrollPane(leaderboard);
-		leadScroll.setPreferredSize(new Dimension(445, 100));
+		leadScroll.setPreferredSize(new Dimension(200, 200));
 		leaderboard.setEditable(false);
 		info.add(leadScroll, BorderLayout.SOUTH);
 
-		infoBox.add(info, BorderLayout.EAST);
+		infoBox.add(info, BorderLayout.SOUTH);
 
 		movementBox = new OverlaidField();
-		movementBox.setPreferredSize(new Dimension(900, 520));
+		movementBox.setPreferredSize(new Dimension(900, 700));
 		
 		// Player player1 = new Player(450, 20,1);
 		
@@ -298,25 +357,23 @@ public class Client implements Runnable{
 		for(int i=0;i<maxPlayers;i++){
 			System.out.print("#");
 
-			players[i] = new PlayerGUI(name, 450, 20*(i+1), i);
+			players[i] = new PlayerGUI(name, 580, 20*(i+1), i);
 			movementBox.add(players[i]);
 				
 			arrows[i] = new Arrow(i, -900,-900, true);
 			movementBox.add(arrows[i]);
 
-			xpos = 450;
+			xpos = 580;
 			ypos = 20*(i+1);
 		}
 		System.out.println("] 100%");
 
-		scoreKeeper = new ScoreKeeper();
-		movementBox.add(scoreKeeper);
 
 		kaks = new Kakamora[4][19];
 
 		for(int i=0;i<4;i++){
-			for (int j=0;j<19;j++) {
-				kaks[i][j] = new Kakamora(i*40, (j*40)+70, i*j, (i%3)+1);
+			for (int j=0;j<14;j++) {
+				kaks[i][j] = new Kakamora(i*40, (j*50)+70, i*j, (i%3)+1);
 				movementBox.add(kaks[i][j]);
 			}
 		}
@@ -324,9 +381,13 @@ public class Client implements Runnable{
 		movementBox.setOpaque(false);
 		infoBox.setOpaque(false);
 		gameScreen.add(movementBox, BorderLayout.NORTH);
-		gameScreen.add(infoBox, BorderLayout.SOUTH);
+		//gameScreen.add(infoBox, BorderLayout.SOUTH);
 
-		c.add(screenDeck);
+
+
+		wholeScreen.add(infoBox, BorderLayout.EAST);
+		wholeScreen.add(screenDeck, BorderLayout.CENTER);
+		c.add(wholeScreen);
 
 		skipTutorial.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
@@ -363,6 +424,8 @@ public class Client implements Runnable{
 					send("MOVE " + playerID + " " + xpos + " " + ypos);
 				}else if(ke.getKeyChar() == KeyEvent.VK_SPACE){
 					send("FIRE " + playerID + " " + xpos + " " + ypos);
+				}else if(ke.getKeyChar() == KeyEvent.VK_6){
+					message.requestFocus();
 				}
 			}
 			public void keyReleased(KeyEvent ke) {}
@@ -400,7 +463,7 @@ public class Client implements Runnable{
 		frame.setVisible(true);
 	}
 
-	public void send(String msg) {
+	public static void send(String msg) {
 		try {
 			byte[] buf = msg.getBytes();
 			InetAddress address = InetAddress.getByName(serverIP);
@@ -413,12 +476,12 @@ public class Client implements Runnable{
 
 	public static void moveLeft(){
 		if(ypos >= 45)
-			ypos -= 20;
+			ypos -= 25;
 	}	
 
 	 public static void moveRight(){
 	 	if(ypos <= 790)
-	 		ypos += 20;
+	 		ypos += 25;
 	}
 
 	public static void main(String[] args){

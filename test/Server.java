@@ -6,6 +6,7 @@ import java.util.*;
 public class Server extends Thread{
 	static ServerSocket serverSocket;
 	static Socket[] clients;
+	static int[][] scores;
 	static int maxPlayers = 0;
     static DatagramSocket serverDataSocket = null;
     static final int WAITING_FOR_PLAYERS = 1;
@@ -34,7 +35,15 @@ public class Server extends Thread{
 
 		this.maxPlayers = num;
 		clients = new Socket[num];
-	
+		scores = new int[num][2];
+		System.out.print("Initializing Scores: [");
+		for(int i=0;i<num;i++){
+			scores[i][0] = i;
+			scores[i][1] = 0;
+			System.out.print("#");
+		}
+		System.out.println("] 100%");
+
 		System.out.println("Server is running at port "+port+"...");
 
 		t.start();
@@ -78,9 +87,7 @@ public class Server extends Thread{
 			}
 
 			playerData = new String(packet.getData());
-
-			System.out.println("playerData: " + playerData);
-			System.out.println("stage: " + stage);
+			System.out.println("playerData: " + playerData.trim());
 			switch(stage){
 				case WAITING_FOR_PLAYERS:
 					if (playerData.startsWith("JOIN")) {
@@ -108,13 +115,13 @@ public class Server extends Thread{
 						ready++;
 					}
 					if(ready >= maxPlayers){
-						broadcast("GAME START");
 						stage = ONGOING;
+						System.out.println("\nSTAGE: " + stage);
+						broadcast("GAME START");
 					}
           			
 					break;
 				case ONGOING:   
-					System.out.println(playerData);
 					if (playerData.startsWith("MOVE")){
 						String[] playerInfo = playerData.split(" ");
 						String name = playerInfo[1];
@@ -123,6 +130,11 @@ public class Server extends Thread{
 
 						String b = "MOVE " + name + " " + x + " " + y;
 						broadcast(b);
+					}else if(playerData.startsWith("SCORE")){
+						String[] playerInfo = playerData.split(" ");
+						int pID = Integer.parseInt(playerInfo[1].trim());
+						int newscore = Integer.parseInt(playerInfo[2].trim());						
+						scores[pID][1] = newscore;
 					}else{
 						broadcast(playerData);
 					}
