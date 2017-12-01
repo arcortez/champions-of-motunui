@@ -91,7 +91,7 @@ public class Server extends Thread{
 			}
 
 			playerData = new String(packet.getData());
-			System.out.println("playerData: " + playerData.trim());
+			// System.out.println("playerData: " + playerData.trim());
 			switch(stage){
 				case WAITING_FOR_PLAYERS:
 					if (playerData.startsWith("JOIN")) {

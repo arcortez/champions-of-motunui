@@ -368,14 +368,14 @@ public class Client implements Runnable{
 		for(int i=0;i<maxPlayers;i++){
 			System.out.print("#");
 
-			players[i] = new PlayerGUI(name, 580, 20*(i+1), i);
+			players[i] = new PlayerGUI(name, 580, 50*(i+1), i);
 			movementBox.add(players[i]);
 				
 			arrows[i] = new Arrow(i, -900,-900, true);
 			movementBox.add(arrows[i]);
 
 			xpos = 580;
-			ypos = 20*(i+1);
+			ypos = 50*(i+1);
 		}
 		System.out.println("] 100%");
 
