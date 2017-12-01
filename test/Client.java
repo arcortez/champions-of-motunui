@@ -377,7 +377,8 @@ public class Client implements Runnable{
 				movementBox.add(kaks[i][j]);
 			}
 		}
-		
+		kakarrow = new KakArrow();
+		movementBox.add(kakarrow);
 		movementBox.setOpaque(false);
 		infoBox.setOpaque(false);
 		gameScreen.add(movementBox, BorderLayout.NORTH);

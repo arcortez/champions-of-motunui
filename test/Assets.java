@@ -25,6 +25,9 @@ public class Assets {
     static BufferedImage countdown_1;
     static BufferedImage countdown_2;
     static BufferedImage countdown_3;
+
+    static BufferedImage arrow_down;
+    static BufferedImage arrow_up;
     
     static BufferedImage title;
 
@@ -46,6 +49,9 @@ public class Assets {
        countdown_1 = loadImage("countdown_1");
        countdown_2 = loadImage("countdown_2");
        countdown_3 = loadImage("countdown_3");
+
+       arrow_up = loadImage("arrow_up");
+       arrow_down = loadImage("arrow_down");
        System.out.println("] 100%");
     }
 

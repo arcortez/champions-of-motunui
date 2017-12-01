@@ -17,7 +17,7 @@ public class Arrow extends JPanel implements Runnable{
 		this.ypos = yPos;
 		this.setOpaque(false);
 		try {
-			this.image = ImageIO.read(new File("proj.png"));	
+			this.image = ImageIO.read(new File("../assets/arrow_up.png"));	
 		} catch(IOException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -45,6 +45,7 @@ public class Arrow extends JPanel implements Runnable{
 					}
 				}
 			}
+
 			try{
 					Thread.sleep(100);
 				}
