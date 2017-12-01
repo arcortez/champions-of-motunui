@@ -150,12 +150,15 @@ public class Server extends Thread{
 							}
 						});
 
-						String b = "LEADERBOARD.";
+						String b = "LEADERBOARD ";
 						for(int i=0;i<scores.length;i++){
 							String name = players.get(scores[i][0]);
-							b = b + name + "." + scores[i][1] + ".";
+							b = b + name.trim() + " " + scores[i][1] + " ";
 						}
-						System.out.println("b: " + b);
+						System.out.println("b: " + b.trim());
+						// buf = new byte[1024];
+						// packet = new DatagramPacket(buf, buf.length);
+
 						broadcast(b);
 					}else{
 						broadcast(playerData);

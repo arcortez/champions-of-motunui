@@ -179,13 +179,13 @@ public class Client implements Runnable{
 					CardLayout p = (CardLayout)screenDeck.getLayout();
 					p.show(screenDeck, "LOSE");
 				} else if (serverData.startsWith("LEADERBOARD")){
-					String[] scoreInfo = serverData.split(".");
+					String[] scoreInfo = serverData.split(" ");
 					System.out.println(scoreInfo.toString());
 					String leaderboardInfo = "LEADERBOARD:";
-					for(int i=1;i<scoreInfo.length;i++){
+					for(int i=1;i<scoreInfo.length/2;i+=2){
 						System.out.println("name:" + scoreInfo[i].trim());
 						System.out.println("score:" + scoreInfo[i+1].trim());
-						leaderboardInfo = leaderboardInfo + "\n" + scoreInfo[i] + " " + scoreInfo[i+1];
+						leaderboardInfo = leaderboardInfo + "\n" + scoreInfo[i].trim() + " " + scoreInfo[i+1].trim();
 					}
 					System.out.println("leaderboardtext: " + leaderboardInfo);
 					leaderboard.setText(leaderboardInfo);
