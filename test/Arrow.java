@@ -45,7 +45,17 @@ public class Arrow extends JPanel implements Runnable{
 					}
 				}
 			}
-
+			boolean clear = true;
+			for(int i=0;i<4;i++){
+				for(int j=0;j<14;j++){
+					if(Client.kaks[i][j].wasHit() == false){
+						clear = false;
+					}
+				}
+			}
+			if(clear){
+				Client.send("GAME CLEAR");
+			}
 			try{
 					Thread.sleep(100);
 				}

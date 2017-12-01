@@ -7,6 +7,7 @@ public class Server extends Thread{
 	static ServerSocket serverSocket;
 	static Socket[] clients;
 	static int[][] scores;
+	static Map<Integer,String> players;
 	static int maxPlayers = 0;
     static DatagramSocket serverDataSocket = null;
     static final int WAITING_FOR_PLAYERS = 1;
@@ -33,6 +34,7 @@ public class Server extends Thread{
 
 		serverSocket = new ServerSocket(port);
 
+		players = new HashMap();
 		this.maxPlayers = num;
 		clients = new Socket[num];
 		scores = new int[num][2];
@@ -59,7 +61,6 @@ public class Server extends Thread{
 
 	public void send(Player p, String msg) {
 		DatagramPacket packet;
-
 		byte[] buf = msg.getBytes();
 		packet = new DatagramPacket(buf, buf.length, p.getAddress(), p.getPort());
 
@@ -87,7 +88,7 @@ public class Server extends Thread{
 			}
 
 			playerData = new String(packet.getData());
-			System.out.println("playerData: " + playerData.trim());
+			// System.out.println("playerData: " + playerData.trim());
 			switch(stage){
 				case WAITING_FOR_PLAYERS:
 					if (playerData.startsWith("JOIN")) {
@@ -97,6 +98,7 @@ public class Server extends Thread{
 
 						// broadcast("JOINED " + tokens[1] + " " + playerCount );
 						String msg = "ID " + playerCount + " " + maxPlayers;
+						players.put(playerCount,tokens[1]);
 						send(player, msg);
 						playerCount++;
 						
@@ -135,6 +137,26 @@ public class Server extends Thread{
 						int pID = Integer.parseInt(playerInfo[1].trim());
 						int newscore = Integer.parseInt(playerInfo[2].trim());						
 						scores[pID][1] = newscore;
+						
+						Arrays.sort(scores, new Comparator<int[]>(){
+							@Override
+							public int compare(int[] p1, int[] p2){
+								Integer score1 = p1[1];
+								Integer score2 = p2[1];
+								return score2.compareTo(score1);
+							}
+						});
+
+						String b = "LEADERBOARD ";
+						for(int i=0;i<scores.length;i++){
+							String name = players.get(scores[i][0]);
+							b = b + name.trim() + " " + scores[i][1] + " ";
+						}
+						System.out.println("b: " + b.trim());
+						// buf = new byte[1024];
+						// packet = new DatagramPacket(buf, buf.length);
+
+						broadcast(b);
 					}else{
 						broadcast(playerData);
 					}
