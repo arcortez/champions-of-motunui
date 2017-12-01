@@ -72,6 +72,7 @@ public class Client implements Runnable{
 	static Kakamora[][] kaks;
 	static PlayerGUI[] players;
 	static Arrow[] arrows;
+	static KakArrow kakarrow;
 
 	static String serverIP;
 	static int port;
@@ -149,6 +150,8 @@ public class Client implements Runnable{
 							t.start();
 						}
 					}
+					Thread k = new Thread(kakarrow);
+					k.start();
 				} else if (serverData.startsWith("MOVE")){
 					String[] playerInfo = serverData.split(" ");
 
@@ -427,6 +430,8 @@ public class Client implements Runnable{
 					send("FIRE " + playerID + " " + xpos + " " + ypos);
 				}else if(ke.getKeyChar() == KeyEvent.VK_6){
 					message.requestFocus();
+				}else if(ke.getKeyChar() == KeyEvent.VK_3){
+					kakarrow.setPos(40,40);
 				}
 			}
 			public void keyReleased(KeyEvent ke) {}

@@ -14,18 +14,29 @@ public class KakArrow extends JPanel implements Runnable{
 
 	public KakArrow(){
 		this.im = Assets.arrow_down;
+		this.xpos = 900;
+		this.ypos = 900;
 	}
 
 	public void run(){
-		while(true){
+		while(this.ypos <= 680){
 			try{
-				Thread.sleep(500);
-
+				this.ypos += 10;
+				Thread.sleep(100);
 			}catch(InterruptedException e){e.printStackTrace();System.exit(1);}
 		}
 	}
 
 	public void paintComponent(Graphics g){
 		g.drawImage(this.im, this.xpos, this.ypos, null);
+	}
+
+	public void setPos(int x, int y){
+		if(this.ypos > 680){
+			this.xpos = x;
+			this.ypos = y;
+			Thread t = new Thread(this);
+			t.start();	
+		}
 	}
 }
