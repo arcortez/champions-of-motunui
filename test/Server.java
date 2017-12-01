@@ -152,11 +152,17 @@ public class Server extends Thread{
 							String name = players.get(scores[i][0]);
 							b = b + name.trim() + " " + scores[i][1] + " ";
 						}
-						System.out.println("b: " + b.trim());
-						// buf = new byte[1024];
-						// packet = new DatagramPacket(buf, buf.length);
-
 						broadcast(b);
+					}else if(playerData.startsWith("GAME CLEAR")){
+						Arrays.sort(scores, new Comparator<int[]>(){
+							@Override
+							public int compare(int[] p1, int[] p2){
+								Integer score1 = p1[1];
+								Integer score2 = p2[1];
+								return score2.compareTo(score1);
+							}
+						});
+						broadcast("GAMECLEAR " + scores[0][0]);
 					}else{
 						broadcast(playerData);
 					}

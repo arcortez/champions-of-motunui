@@ -60,6 +60,7 @@ public class Client implements Runnable{
 
 	private static JPanel winScreen;
 	private static JPanel loseScreen;
+	private static JPanel gameOverScreen;
 
 	private static int currentTutorialScreen = 0;
 
@@ -180,7 +181,7 @@ public class Client implements Runnable{
 					}catch(InterruptedException e){e.printStackTrace();}
 					
 					CardLayout p = (CardLayout)screenDeck.getLayout();
-					p.show(screenDeck, "LOSE");
+					p.show(screenDeck, "GAMEOVER");
 				} else if (serverData.startsWith("LEADERBOARD")){
 					String[] scoreInfo = serverData.split(" ");
 					System.out.println(scoreInfo.toString());
@@ -192,6 +193,15 @@ public class Client implements Runnable{
 					}
 					System.out.println("leaderboardtext: " + leaderboardInfo);
 					leaderboard.setText(leaderboardInfo);
+				} else if (serverData.startsWith("GAMECLEAR")){
+					String[] info = serverData.split(" ");
+					if(Integer.parseInt(info[1].trim()) == playerID){
+						CardLayout p = (CardLayout)screenDeck.getLayout();
+						p.show(screenDeck, "WIN");
+					}else{
+						CardLayout p = (CardLayout)screenDeck.getLayout();
+						p.show(screenDeck, "LOSE");
+					}
 				} else {
 					System.out.println(serverData.trim());
 				}
@@ -269,14 +279,17 @@ public class Client implements Runnable{
 		});
 		winScreen = new JPanel();
 		loseScreen = new JPanel();
-		winScreen.add(new JLabel("Yu WIN!"));
-		loseScreen.add(new JLabel("Yu Lose!"));
+		gameOverScreen = new JPanel();
+		winScreen.add(new JLabel(new ImageIcon("../assets/winner_screen.png")));
+		loseScreen.add(new JLabel(new ImageIcon("../assets/loser_screen.png")));
+		gameOverScreen.add(new JLabel(new ImageIcon("../assets/gameover_screen.png")));
 
 		screenDeck.add(tutorialScreen, "TUTORIAL");		
 		screenDeck.add(waitingScreen, "WAITING");
 		screenDeck.add(gameScreen, "GAME");
 		screenDeck.add(winScreen, "WIN");
 		screenDeck.add(loseScreen, "LOSE");
+		screenDeck.add(gameOverScreen, "GAMEOVER");
 		gameScreen.setLayout(new BorderLayout());
 		
 
