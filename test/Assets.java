@@ -9,6 +9,8 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
 
+import java.util.Random;
+
 public class Assets {
     static BufferedImage imMoana;
     static BufferedImage imMaui;
@@ -25,6 +27,9 @@ public class Assets {
     static BufferedImage countdown_1;
     static BufferedImage countdown_2;
     static BufferedImage countdown_3;
+
+    static BufferedImage arrow_down;
+    static BufferedImage arrow_up;
     
     static BufferedImage title;
 
@@ -46,6 +51,9 @@ public class Assets {
        countdown_1 = loadImage("countdown_1");
        countdown_2 = loadImage("countdown_2");
        countdown_3 = loadImage("countdown_3");
+
+       arrow_up = loadImage("arrow_up");
+       arrow_down = loadImage("arrow_down");
        System.out.println("] 100%");
     }
 
@@ -94,6 +102,24 @@ public class Assets {
         str = "0" + str;
       }
       return str;
+    }
+
+
+    public static int[] getRandomKakPos(){
+      Random rand = new Random();
+      int[] arr = new int[2];
+      while(true){
+        int pos1 = rand.nextInt(4);
+        int pos2 = rand.nextInt(14);
+        if(Client.kaks[pos1][pos2].wasHit() == false){
+          arr[0] = Client.kaks[pos1][pos2].xpos;
+          System.out.println(arr[0]);
+          arr[1] = Client.kaks[pos1][pos2].ypos;
+          System.out.println(arr[1]);
+          break;
+        }
+      }
+      return arr;
     }
 }
 
