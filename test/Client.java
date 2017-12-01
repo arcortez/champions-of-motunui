@@ -125,7 +125,7 @@ public class Client implements Runnable{
 			}
 
 			serverData = new String(packet.getData());
-			System.out.println("serverData: " + serverData.trim());
+			// System.out.println("serverData: " + serverData.trim());
 			
 			if (!connected && serverData.startsWith("ID")){
 				connected = true;

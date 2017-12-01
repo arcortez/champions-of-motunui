@@ -61,9 +61,6 @@ public class Server extends Thread{
 
 	public void send(Player p, String msg) {
 		DatagramPacket packet;
-
-
-		System.out.println("msg:" +msg);
 		byte[] buf = msg.getBytes();
 		packet = new DatagramPacket(buf, buf.length, p.getAddress(), p.getPort());
 
