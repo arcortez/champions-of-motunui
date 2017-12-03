@@ -22,7 +22,16 @@ public class PlayerGUI extends JPanel implements Runnable{
 		this.playerid = playerid;
 		this.setOpaque(false);
 		try {
-			this.image = ImageIO.read(new File("testimage.png"));	
+			if(playerid%10 == 1){
+				this.image = ImageIO.read(new File("../assets/moana.png"));
+			}else if(playerid%10 == 2){
+				this.image = ImageIO.read(new File("../assets/maui.png"));
+			}else if(playerid%10 == 3){
+				this.image = ImageIO.read(new File("../assets/hei_hei.png"));
+			}else{
+				this.image = ImageIO.read(new File("../assets/pua.png"));
+			}
+				
 		} catch(IOException e) {
 			e.printStackTrace();
 			System.exit(1);
