@@ -33,6 +33,9 @@ public class Assets {
     
     static BufferedImage title;
 
+    static BufferedImage winScreen;
+    static BufferedImage loserScreen;
+
     // start = new JButton(new ImageIcon(filename_source));
 
     Assets(){
@@ -54,6 +57,9 @@ public class Assets {
 
        arrow_up = loadImage("arrow_up");
        arrow_down = loadImage("arrow_down");
+
+       winScreen = loadImage("winner_screen");
+       loserScreen = loadImage("loser_screen");
        System.out.println("] 100%");
     }
 

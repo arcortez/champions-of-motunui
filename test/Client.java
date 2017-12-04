@@ -147,7 +147,6 @@ public class Client implements Runnable{
 						Integer pID = Integer.parseInt(playerInfo[i].trim());
 						String name = playerInfo[i+1];
 
-						System.out.println("GUICHEP:" + pID + " " + name);
 						players[pID].setName(name);
 					}
 					CardLayout p = (CardLayout)screenDeck.getLayout();
@@ -194,15 +193,13 @@ public class Client implements Runnable{
 					String[] scoreInfo = serverData.split(" ");
 					String leaderboardInfo = "LEADERBOARD:";
 					for(int i=1;i<scoreInfo.length&&scoreInfo[i]!=null;i+=2){
-						System.out.println(i);
-						System.out.println("name:" + scoreInfo[i].trim());
-						System.out.println("score:" + scoreInfo[i+1].trim());
 						leaderboardInfo = leaderboardInfo + "\n" + scoreInfo[i].trim() + " " + scoreInfo[i+1].trim();
 					}
 					System.out.println(leaderboardInfo);
 					leaderboard.setText(leaderboardInfo);
 				} else if (serverData.startsWith("GAMECLEAR")){
 					String[] info = serverData.split(" ");
+		
 					if(Integer.parseInt(info[1].trim()) == playerID){
 						CardLayout p = (CardLayout)screenDeck.getLayout();
 						p.show(screenDeck, "WIN");
@@ -301,11 +298,15 @@ public class Client implements Runnable{
 				readyButton.setEnabled(false);
 			}
 		});
-		winScreen = new JPanel();
-		loseScreen = new JPanel();
+		winScreen = new WinScreen();
+		winScreen.setPreferredSize(new Dimension(900, 700));
+		
+
+		loseScreen = new LoseScreen();
+		loseScreen.setPreferredSize(new Dimension(900, 700));
 		gameOverScreen = new JPanel();
-		winScreen.add(new JLabel(new ImageIcon("../assets/winner_screen.png")));
-		loseScreen.add(new JLabel(new ImageIcon("../assets/loser_screen.png")));
+		// winScreen.add(new JLabel(new ImageIcon("../assets/winner_screen.png")));
+		// loseScreen.add(new JLabel(new ImageIcon("../assets/loser_screen.png")));
 		gameOverScreen.add(new JLabel(new ImageIcon("../assets/gameover_screen.png")));
 
 		screenDeck.add(tutorialScreen, "TUTORIAL");		

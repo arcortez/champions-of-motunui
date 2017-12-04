@@ -6,9 +6,10 @@ import java.util.*;
 public class Server extends Thread{
 	static ServerSocket serverSocket;
 	static Socket[] clients;
-	static int[][] scores;
+	// static int[][] scores;
 	static int[][] lives;
 	static Map<Integer,String> players;
+	static Map<Integer,Integer> scores;
 	static int maxPlayers = 0;
     static DatagramSocket serverDataSocket = null;
     static final int WAITING_FOR_PLAYERS = 1;
@@ -36,9 +37,9 @@ public class Server extends Thread{
 		serverSocket = new ServerSocket(port);
 
 		players = new HashMap();
+		scores = new HashMap();
 		this.maxPlayers = num;
 		clients = new Socket[num];
-		scores = new int[num][2];
 		lives = new int[num][2];
 		for(int i=0;i<lives.length;i++){
 			lives[i][1] = 3;
@@ -46,8 +47,7 @@ public class Server extends Thread{
 
 		System.out.print("Initializing Scores: [");
 		for(int i=0;i<num;i++){
-			scores[i][0] = i;
-			scores[i][1] = 0;
+			scores.put(i,0);
 			System.out.print("#");
 		}
 		System.out.println("] 100%");
@@ -129,7 +129,6 @@ public class Server extends Thread{
 						for(int i=0;i<maxPlayers;i++){
 							b = b.trim() + " " + i + " " + players.get(i).trim();
 						}
-						System.out.println(b);
 						broadcast(b);
 					}
           			
@@ -146,40 +145,71 @@ public class Server extends Thread{
 					}else if(playerData.startsWith("SCORE")){
 						String[] playerInfo = playerData.split(" ");
 						int pID = Integer.parseInt(playerInfo[1].trim());
-						int newscore = Integer.parseInt(playerInfo[2].trim());						
-						scores[pID][1] = newscore;
-
-						System.out.println("SCOREDDAW: " + pID + " " + newscore);
+						int newscore = Integer.parseInt(playerInfo[2].trim());	
+						scores.put(pID,newscore);					
 						
-						Arrays.sort(scores, new Comparator<int[]>(){
+						List scoresList = new LinkedList(scores.entrySet());
+						
+						Collections.sort(scoresList, new Comparator(){
 							@Override
-							public int compare(int[] p1, int[] p2){
-								Integer score1 = p1[1];
-								Integer score2 = p2[1];
-								return score2.compareTo(score1);
+							public int compare(Object o1, Object o2) {
+								return ((Comparable) ((Map.Entry) (o2)).getValue())
+									.compareTo(((Map.Entry) (o1)).getValue());
 							}
 						});
 
+						HashMap sortedScores = new LinkedHashMap();
+						for (Iterator it = scoresList.iterator(); it.hasNext();){
+							Map.Entry entry = (Map.Entry) it.next();
+							sortedScores.put(entry.getKey(), entry.getValue());
+						}
+
 						String b = "LEADERBOARD";
-						for(int i=0;i<scores.length;i++){
-							String name = players.get(scores[i][0]);
-							b = b + " " + name.trim() + " " + scores[i][1];
+						
+						Iterator iter = ((Set)sortedScores.entrySet()).iterator();
+						while(iter.hasNext()){
+							Map.Entry entry = (Map.Entry)iter.next();
+							String name = players.get(entry.getKey());
+							b = b + " " + name.trim() + " " + entry.getValue();
 						}
 						broadcast(b);
 					}else if(playerData.startsWith("GAME CLEAR")){
 						for(int i=0;i<lives.length;i++){
-							scores[i][1] = scores[i][1] + (lives[i][1] *20);
-							System.out.println(scores[i][0] + " " + scores[i][1]);
+							int finalScore = scores.get(i) + (lives[i][1] *20);
+							scores.put(i, finalScore);
 						}
-						Arrays.sort(scores, new Comparator<int[]>(){
+
+						List scoresList = new LinkedList(scores.entrySet());
+						
+						Collections.sort(scoresList, new Comparator(){
 							@Override
-							public int compare(int[] p1, int[] p2){
-								Integer score1 = p1[1];
-								Integer score2 = p2[1];
-								return score2.compareTo(score1);
+							public int compare(Object o1, Object o2) {
+								return ((Comparable) ((Map.Entry) (o2)).getValue())
+									.compareTo(((Map.Entry) (o1)).getValue());
 							}
 						});
-						broadcast("GAMECLEAR " + scores[0][0]);
+
+						HashMap sortedScores = new LinkedHashMap();
+						for (Iterator it = scoresList.iterator(); it.hasNext();){
+							Map.Entry entry = (Map.Entry) it.next();
+							sortedScores.put(entry.getKey(), entry.getValue());
+						}
+
+						// Iterator iter = ((Set)sortedScores.entrySet()).iterator();
+						// while(iter.hasNext()){
+						// 	Map.Entry entry = (Map.Entry)iter.next();
+						// 	broadcast("GAMECLEAR " + entry.getKey());
+						// 	break;
+						// }
+
+						String b = "GAMECLEAR ";
+						Iterator iter = ((Set)sortedScores.entrySet()).iterator();
+						while(iter.hasNext()){
+							Map.Entry entry = (Map.Entry)iter.next();
+							String name = players.get(entry.getKey());
+							b = b + " " + name.trim() + " " + entry.getValue();
+						}
+						broadcast(b);
 					}else if(playerData.startsWith("HIT")){
 						String[] player = playerData.split(" ");
 						int pID = Integer.parseInt(player[1].trim());
