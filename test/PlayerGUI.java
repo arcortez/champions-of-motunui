@@ -77,6 +77,7 @@ public class PlayerGUI extends JPanel implements Runnable{
 
 	public void hit(){
 		this.isHit = true;
+		System.out.println("PLAYERGUI HIT");
 		Client.send("HIT " + this.playerid);
 		this.isHit = false;
 	}

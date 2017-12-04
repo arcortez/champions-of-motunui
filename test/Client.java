@@ -129,7 +129,7 @@ public class Client implements Runnable{
 			}
 
 			serverData = new String(packet.getData());
-			// System.out.println("serverData: " + serverData.trim());
+			System.out.println("serverData: " + serverData.trim());
 			
 			if (!connected && serverData.startsWith("ID")){
 				connected = true;
@@ -212,15 +212,15 @@ public class Client implements Runnable{
 						CardLayout p = (CardLayout)screenDeck.getLayout();
 						p.show(screenDeck, "LOSE");
 					}
-				} else if (serverData.startsWith("HIT")){
+				} else if (serverData.startsWith("LIFE")){
 					String[] player = serverData.split(" ");
 					int pID = Integer.parseInt(player[1].trim());
 					int lifeCount = Integer.parseInt(player[2].trim());
+					System.out.println("CLIENT: " + pID + " " + lifeCount);
 					System.out.println(pID + " Lives left:"+lifeCount);
 					if(pID == playerID){
 						lives.setText(lifeCount+"");
 					}
-
 				} else if (serverData.startsWith("OUT")){
 					String[] player = serverData.split(" ");
 					int pID = Integer.parseInt(player[1].trim());

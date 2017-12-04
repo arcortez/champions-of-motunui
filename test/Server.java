@@ -95,7 +95,7 @@ public class Server extends Thread{
 			}
 
 			playerData = new String(packet.getData());
-			// System.out.println("playerData: " + playerData.trim());
+			System.out.println("playerData: " + playerData.trim());
 			switch(stage){
 				case WAITING_FOR_PLAYERS:
 					if (playerData.startsWith("JOIN")) {
@@ -186,15 +186,21 @@ public class Server extends Thread{
 					}else if(playerData.startsWith("HIT")){
 						String[] player = playerData.split(" ");
 						int pID = Integer.parseInt(player[1].trim());
-
 						for(int i=0;i<lives.length;i++){
 							if(i==pID){
 								lives[i][1]--;
 								if(lives[i][1] == 0){
 									broadcast("OUT " + pID);
 								} else {
-									broadcast("HIT " + pID + " " + lives[i][1]);
+									System.out.println("SERVER: ");
+									System.out.println("LIFE " + pID + " " + lives[i][1]); 
+									broadcast("LIFE " + pID + " " + lives[i][1]);
 								}
+								try{
+									Thread.sleep(1000);
+								}catch(InterruptedException e){}
+								
+
 								break; 
 							}
 						}

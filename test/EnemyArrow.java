@@ -32,7 +32,8 @@ public class EnemyArrow extends JPanel implements Runnable{
 					this.xpos = 1000;
 					this.ypos = 1000;
 					Client.players[i].hit();
-					System.out.println(Client.players[i].name + " WAS HIT!");						
+					System.out.println(Client.players[i].name + " WAS HIT!");	
+					break;					
 				}
 			}
 			try{
