@@ -66,6 +66,7 @@ public class Client implements Runnable{
 
 	static int playerID;
 	static int maxPlayers;
+	static String[] finalScores;
 
 	static int xpos;
 	static int ypos;
@@ -83,7 +84,7 @@ public class Client implements Runnable{
 		this.serverIP = serverIP;
 		this.name = name;
 		this.port = port;
-
+	
 		try{
 			socket = new DatagramSocket();
 			serverSocket = new Socket(serverIP, port);
@@ -140,8 +141,15 @@ public class Client implements Runnable{
 				
 				System.out.println("You have joined the game.");
 			} else if (connected) {
-				if (serverData.startsWith("GAME START")){
+				if (serverData.startsWith("GAMESTART")){
 					System.out.println("\nGAME START!\n");
+					String[] playerInfo = serverData.split(" ");
+					for(int i=1;i<playerInfo.length;i+=2){
+						Integer pID = Integer.parseInt(playerInfo[i].trim());
+						String name = playerInfo[i+1];
+
+						players[pID].setName(name);
+					}
 					CardLayout p = (CardLayout)screenDeck.getLayout();
 					p.show(screenDeck, "GAME");
 					leaderboard.requestFocus();
@@ -185,21 +193,39 @@ public class Client implements Runnable{
 				} else if (serverData.startsWith("LEADERBOARD")){
 					String[] scoreInfo = serverData.split(" ");
 					String leaderboardInfo = "LEADERBOARD:";
-					for(int i=1;i<scoreInfo.length/2;i+=2){
-						System.out.println("name:" + scoreInfo[i].trim());
-						System.out.println("score:" + scoreInfo[i+1].trim());
+					for(int i=1;i<scoreInfo.length&&scoreInfo[i]!=null;i+=2){
 						leaderboardInfo = leaderboardInfo + "\n" + scoreInfo[i].trim() + " " + scoreInfo[i+1].trim();
 					}
 					System.out.println(leaderboardInfo);
 					leaderboard.setText(leaderboardInfo);
 				} else if (serverData.startsWith("GAMECLEAR")){
 					String[] info = serverData.split(" ");
-					if(Integer.parseInt(info[1].trim()) == playerID){
+		
+					if(info[1].trim().equals(name)){
 						CardLayout p = (CardLayout)screenDeck.getLayout();
 						p.show(screenDeck, "WIN");
 					}else{
 						CardLayout p = (CardLayout)screenDeck.getLayout();
 						p.show(screenDeck, "LOSE");
+					}
+
+					finalScores = info;
+					
+				} else if (serverData.startsWith("HIT")){
+					String[] player = serverData.split(" ");
+					int pID = Integer.parseInt(player[1].trim());
+					int lifeCount = Integer.parseInt(player[2].trim());
+					if(pID == playerID){
+						lives.setText(lifeCount+"");
+					}
+
+				} else if (serverData.startsWith("OUT")){
+					String[] player = serverData.split(" ");
+					int pID = Integer.parseInt(player[1].trim());
+					players[pID].hasDied();
+					if(pID == playerID){
+						lives.setText("0");
+						//disable UI for the player
 					}
 				} else {
 					System.out.println(serverData.trim());
@@ -276,11 +302,15 @@ public class Client implements Runnable{
 				readyButton.setEnabled(false);
 			}
 		});
-		winScreen = new JPanel();
-		loseScreen = new JPanel();
+		winScreen = new WinScreen();
+		winScreen.setPreferredSize(new Dimension(900, 700));
+		
+
+		loseScreen = new LoseScreen();
+		loseScreen.setPreferredSize(new Dimension(900, 700));
 		gameOverScreen = new JPanel();
-		winScreen.add(new JLabel(new ImageIcon("../assets/winner_screen.png")));
-		loseScreen.add(new JLabel(new ImageIcon("../assets/loser_screen.png")));
+		// winScreen.add(new JLabel(new ImageIcon("../assets/winner_screen.png")));
+		// loseScreen.add(new JLabel(new ImageIcon("../assets/loser_screen.png")));
 		gameOverScreen.add(new JLabel(new ImageIcon("../assets/gameover_screen.png")));
 
 		screenDeck.add(tutorialScreen, "TUTORIAL");		
@@ -382,8 +412,8 @@ public class Client implements Runnable{
 		System.out.print("Adding Players: [");
 		for(int i=0;i<maxPlayers;i++){
 			System.out.print("#");
-
-			players[i] = new PlayerGUI(name, 580, 50*(i+1), i);
+			
+			players[i] = new PlayerGUI("", 580, 50*(i+1), i);
 			movementBox.add(players[i]);
 				
 			arrows[i] = new Arrow(i, -900,-900, true);
