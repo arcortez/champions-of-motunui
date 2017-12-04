@@ -21,8 +21,9 @@ public class Server extends Thread{
 
 	static int ready = 0;
    
-	GameState gameState;
+	static GameState gameState;
 	private static ChatServer cserver;
+	private static ArrowLauncher arrlauncher;
 
 	public Server(int port, int num) throws IOException{
 		try {
@@ -57,7 +58,7 @@ public class Server extends Thread{
 		t.start();
 
 	}
-	public void broadcast(String msg){
+	public static void broadcast(String msg){
 		for(Iterator ite=gameState.getPlayers().keySet().iterator();ite.hasNext();){
 			String name = (String) ite.next();
 			Player player = (Player)gameState.getPlayers().get(name);
@@ -65,7 +66,7 @@ public class Server extends Thread{
 		}
 	}
 
-	public void send(Player p, String msg) {
+	public static void send(Player p, String msg) {
 		DatagramPacket packet;
 		byte[] buf = msg.getBytes();
 		packet = new DatagramPacket(buf, buf.length, p.getAddress(), p.getPort());
@@ -131,6 +132,8 @@ public class Server extends Thread{
 						}
 						System.out.println(b);
 						broadcast(b);
+						arrlauncher = new ArrowLauncher();
+						arrlauncher.start();
 					}
           			
 					break;
