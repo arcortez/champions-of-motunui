@@ -22,8 +22,9 @@ public class Server extends Thread{
 
 	static int ready = 0;
    
-	GameState gameState;
+	static GameState gameState;
 	private static ChatServer cserver;
+	private static ArrowLauncher arrlauncher;
 
 	public Server(int port, int num) throws IOException{
 		try {
@@ -57,7 +58,7 @@ public class Server extends Thread{
 		t.start();
 
 	}
-	public void broadcast(String msg){
+	public static void broadcast(String msg){
 		for(Iterator ite=gameState.getPlayers().keySet().iterator();ite.hasNext();){
 			String name = (String) ite.next();
 			Player player = (Player)gameState.getPlayers().get(name);
@@ -65,7 +66,7 @@ public class Server extends Thread{
 		}
 	}
 
-	public void send(Player p, String msg) {
+	public static void send(Player p, String msg) {
 		DatagramPacket packet;
 		byte[] buf = msg.getBytes();
 		packet = new DatagramPacket(buf, buf.length, p.getAddress(), p.getPort());
@@ -94,7 +95,7 @@ public class Server extends Thread{
 			}
 
 			playerData = new String(packet.getData());
-			// System.out.println("playerData: " + playerData.trim());
+			System.out.println("playerData: " + playerData.trim());
 			switch(stage){
 				case WAITING_FOR_PLAYERS:
 					if (playerData.startsWith("JOIN")) {
@@ -130,6 +131,8 @@ public class Server extends Thread{
 							b = b.trim() + " " + i + " " + players.get(i).trim();
 						}
 						broadcast(b);
+						arrlauncher = new ArrowLauncher();
+						arrlauncher.start();
 					}
           			
 					break;
@@ -214,15 +217,21 @@ public class Server extends Thread{
 					}else if(playerData.startsWith("HIT")){
 						String[] player = playerData.split(" ");
 						int pID = Integer.parseInt(player[1].trim());
-
 						for(int i=0;i<lives.length;i++){
 							if(i==pID){
 								lives[i][1]--;
 								if(lives[i][1] == 0){
 									broadcast("OUT " + pID);
 								} else {
-									broadcast("HIT " + pID + " " + lives[i][1]);
+									System.out.println("SERVER: ");
+									System.out.println("LIFE " + pID + " " + lives[i][1]); 
+									broadcast("LIFE " + pID + " " + lives[i][1]);
 								}
+								try{
+									Thread.sleep(1000);
+								}catch(InterruptedException e){}
+								
+
 								break; 
 							}
 						}

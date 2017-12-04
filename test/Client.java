@@ -75,6 +75,8 @@ public class Client implements Runnable{
 	static PlayerGUI[] players;
 	static Arrow[] arrows;
 	static KakArrow kakarrow;
+	static EnemyArrow[] enemyArrows;
+	static int enemyArrowCount = 3;
 
 	static String serverIP;
 	static int port;
@@ -128,7 +130,7 @@ public class Client implements Runnable{
 			}
 
 			serverData = new String(packet.getData());
-			// System.out.println("serverData: " + serverData.trim());
+			System.out.println("serverData: " + serverData.trim());
 			
 			if (!connected && serverData.startsWith("ID")){
 				connected = true;
@@ -208,17 +210,17 @@ public class Client implements Runnable{
 						CardLayout p = (CardLayout)screenDeck.getLayout();
 						p.show(screenDeck, "LOSE");
 					}
-
+				} else if (serverData.startsWith("LIFE")){
 					finalScores = info;
-					
 				} else if (serverData.startsWith("HIT")){
 					String[] player = serverData.split(" ");
 					int pID = Integer.parseInt(player[1].trim());
 					int lifeCount = Integer.parseInt(player[2].trim());
+					System.out.println("CLIENT: " + pID + " " + lifeCount);
+					System.out.println(pID + " Lives left:"+lifeCount);
 					if(pID == playerID){
 						lives.setText(lifeCount+"");
 					}
-
 				} else if (serverData.startsWith("OUT")){
 					String[] player = serverData.split(" ");
 					int pID = Integer.parseInt(player[1].trim());
@@ -226,7 +228,21 @@ public class Client implements Runnable{
 					if(pID == playerID){
 						lives.setText("0");
 						//disable UI for the player
+						message.requestFocus();
+						focus.setEnabled(false);
 					}
+				} else if(serverData.startsWith("ENEMYFIRE")){
+					String[] playerData = serverData.split(" ");
+					
+					int xpos = Integer.parseInt(playerData[1].trim());
+					System.out.println(xpos);
+					for(int i=0;i<enemyArrowCount;i++){
+						if(enemyArrows[i].setPos(xpos, 0)){
+
+							break;
+						}
+					}
+
 				} else {
 					System.out.println(serverData.trim());
 				}
@@ -424,6 +440,11 @@ public class Client implements Runnable{
 		}
 		System.out.println("] 100%");
 
+		enemyArrows = new EnemyArrow[3];
+		for(int i=0;i<enemyArrowCount;i++){
+			enemyArrows[i] = new EnemyArrow();
+			movementBox.add(enemyArrows[i]);
+		}
 
 		kaks = new Kakamora[4][19];
 
@@ -453,13 +474,29 @@ public class Client implements Runnable{
 			}
 		});
 
+		message.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				if(message.getText().length() > 0){
+					cclient.sendMessage(new ChatMessage(message.getText()));
+					message.setText("");
+				}
+				int livesleft = Integer.parseInt(lives.getText());
+				if(livesleft > 0){
+					leaderboard.requestFocus();
+				}
+			}
+		});
+
 		sendButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				if(message.getText().length() > 0){
 					cclient.sendMessage(new ChatMessage(message.getText()));
 					message.setText("");
 				}
-				leaderboard.requestFocus();
+				int livesleft = Integer.parseInt(lives.getText());
+				if(livesleft > 0){
+					leaderboard.requestFocus();
+				}
 			}
 		});
 
@@ -484,7 +521,7 @@ public class Client implements Runnable{
 				}else if(ke.getKeyChar() == KeyEvent.VK_6){
 					message.requestFocus();
 				}else if(ke.getKeyChar() == KeyEvent.VK_3){
-					kakarrow.setPos(40,40);
+					enemyArrows[1].setPos(40,40);
 				}
 			}
 			public void keyReleased(KeyEvent ke) {}
