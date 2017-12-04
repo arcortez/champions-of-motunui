@@ -171,7 +171,7 @@ public class Client implements Runnable{
 					int y = Integer.parseInt(playerInfo[3].trim());
 				
 
-					System.out.println("MOVE " + pID + " " + x + " " + y);
+					// System.out.println("MOVE " + pID + " " + x + " " + y);
 					players[pID].setPos(x,y);
 					// change UI
 				} else if (serverData.startsWith("FIRE")){
@@ -182,7 +182,7 @@ public class Client implements Runnable{
 					int y = Integer.parseInt(playerInfo[3].trim());
 				
 
-					System.out.println("FIRE " + pID + " " + x + " " + y);
+					// System.out.println("FIRE " + pID + " " + x + " " + y);
 					arrows[pID].setPos(y,x);
 					// change UI
 				} else if (serverData.startsWith("GAME OVER")){
@@ -190,15 +190,18 @@ public class Client implements Runnable{
 					p.show(screenDeck, "GAMEOVER");
 				} else if (serverData.startsWith("LEADERBOARD")){
 					String[] scoreInfo = serverData.split(" ");
+
 					String leaderboardInfo = "LEADERBOARD:";
 					for(int i=1;i<scoreInfo.length&&scoreInfo[i]!=null;i+=2){
 						leaderboardInfo = leaderboardInfo + "\n" + scoreInfo[i].trim() + " " + scoreInfo[i+1].trim();
 					}
+					System.out.println("\t -------------");
 					System.out.println(leaderboardInfo);
+					System.out.println("\t -------------");
 					leaderboard.setText(leaderboardInfo);
 				} else if (serverData.startsWith("GAMECLEAR")){
 					String[] info = serverData.split(" ");
-		
+					finalScores = info;
 					if(info[1].trim().equals(name)){
 						CardLayout p = (CardLayout)screenDeck.getLayout();
 						p.show(screenDeck, "WIN");
@@ -210,8 +213,8 @@ public class Client implements Runnable{
 					String[] player = serverData.split(" ");
 					int pID = Integer.parseInt(player[1].trim());
 					int lifeCount = Integer.parseInt(player[2].trim());
-					System.out.println("CLIENT: " + pID + " " + lifeCount);
-					System.out.println(pID + " Lives left:"+lifeCount);
+					// System.out.println("CLIENT: " + pID + " " + lifeCount);
+					System.out.println("id "+pID + " has "+lifeCount+" lives left.");
 					if(pID == playerID){
 						lives.setText(lifeCount+"");
 					}

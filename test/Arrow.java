@@ -30,11 +30,11 @@ public class Arrow extends JPanel implements Runnable{
 			this.ypos -= 10;
 			for(int i=0;i<4;i++){
 				for(int j=0;j<14;j++){
-					if(Client.kaks[i][j].xpos >= this.ypos - 15 && Client.kaks[i][j].xpos <= this.ypos + 15 && Client.kaks[i][j].ypos >= this.xpos - 15 && Client.kaks[i][j].ypos <= this.xpos + 15){
+					if(Client.kaks[i][j].xpos >= this.ypos - 300 && Client.kaks[i][j].xpos <= this.ypos + 300 && Client.kaks[i][j].ypos >= this.xpos - 300 && Client.kaks[i][j].ypos <= this.xpos + 300){
 						System.out.println(Client.kaks[i][j].toString());
 						Client.kaks[i][j].hit(this.id);
-						this.xpos = -900;
-						this.ypos = -900;
+						// this.xpos = -900;
+						// this.ypos = -900;
 						
 						if(this.id == Client.playerID){
 							String newScore = String.valueOf(Integer.parseInt(Client.score.getText()) + 5);
@@ -55,6 +55,7 @@ public class Arrow extends JPanel implements Runnable{
 				}
 			}
 			if(clear){
+				System.out.println("GAME CLEAR @ arrow");
 				Client.send("GAME CLEAR");
 				break;
 			}
