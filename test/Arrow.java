@@ -38,6 +38,7 @@ public class Arrow extends JPanel implements Runnable{
 						
 						if(this.id == Client.playerID){
 							String newScore = String.valueOf(Integer.parseInt(Client.score.getText()) + 5);
+							System.out.println("newScore: " + newScore);
 							Client.send("SCORE " + this.id + " " + newScore);	
 							newScore = Assets.addZeroes(newScore, 8);
 							Client.score.setText(newScore);

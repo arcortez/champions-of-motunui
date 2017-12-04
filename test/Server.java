@@ -148,6 +148,8 @@ public class Server extends Thread{
 						int pID = Integer.parseInt(playerInfo[1].trim());
 						int newscore = Integer.parseInt(playerInfo[2].trim());						
 						scores[pID][1] = newscore;
+
+						System.out.println("SCOREDDAW: " + pID + " " + newscore);
 						
 						Arrays.sort(scores, new Comparator<int[]>(){
 							@Override
@@ -158,10 +160,10 @@ public class Server extends Thread{
 							}
 						});
 
-						String b = "LEADERBOARD ";
+						String b = "LEADERBOARD";
 						for(int i=0;i<scores.length;i++){
 							String name = players.get(scores[i][0]);
-							b = b + name.trim() + " " + scores[i][1] + " ";
+							b = b + " " + name.trim() + " " + scores[i][1];
 						}
 						broadcast(b);
 					}else if(playerData.startsWith("GAME CLEAR")){

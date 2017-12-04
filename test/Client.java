@@ -146,6 +146,8 @@ public class Client implements Runnable{
 					for(int i=1;i<playerInfo.length;i+=2){
 						Integer pID = Integer.parseInt(playerInfo[i].trim());
 						String name = playerInfo[i+1];
+
+						System.out.println("GUICHEP:" + pID + " " + name);
 						players[pID].setName(name);
 					}
 					CardLayout p = (CardLayout)screenDeck.getLayout();
@@ -192,6 +194,7 @@ public class Client implements Runnable{
 					String[] scoreInfo = serverData.split(" ");
 					String leaderboardInfo = "LEADERBOARD:";
 					for(int i=1;i<scoreInfo.length&&scoreInfo[i]!=null;i+=2){
+						System.out.println(i);
 						System.out.println("name:" + scoreInfo[i].trim());
 						System.out.println("score:" + scoreInfo[i+1].trim());
 						leaderboardInfo = leaderboardInfo + "\n" + scoreInfo[i].trim() + " " + scoreInfo[i+1].trim();
