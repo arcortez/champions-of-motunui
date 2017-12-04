@@ -330,7 +330,7 @@ public class Client implements Runnable{
 
 		loseScreen = new LoseScreen();
 		loseScreen.setPreferredSize(new Dimension(900, 700));
-		gameOverScreen = new JPanel();
+		gameOverScreen = new GameOverScreen();
 		// winScreen.add(new JLabel(new ImageIcon("../assets/winner_screen.png")));
 		// loseScreen.add(new JLabel(new ImageIcon("../assets/loser_screen.png")));
 		gameOverScreen.add(new JLabel(new ImageIcon("../assets/gameover_screen.png")));

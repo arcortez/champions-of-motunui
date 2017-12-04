@@ -35,6 +35,7 @@ public class Assets {
 
     static BufferedImage winScreen;
     static BufferedImage loseScreen;
+    static BufferedImage gameoverScreen;
 
     // start = new JButton(new ImageIcon(filename_source));
 
@@ -60,17 +61,16 @@ public class Assets {
 
        winScreen = loadImage("winner_screen");
        loseScreen = loadImage("loser_screen");
+       gameoverScreen = loadImage("gameover_scren");
        System.out.println("] 100%");
     }
 
     public static BufferedImage loadImage(String filename) {
         try {
           System.out.print("#");
-            return ImageIO.read(new File("../assets/"+filename+".png"));
-        } catch(IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
+          return ImageIO.read(new File("../assets/"+filename+".png"));
+        } catch(IOException e) {}
+
         System.out.print("!");
         return null;
     }
@@ -98,7 +98,7 @@ public class Assets {
           clip.start();
       } catch(Exception e) {
         e.printStackTrace();
-        System.exit(1);
+        // System.exit(1);
       }
     }
 
@@ -110,22 +110,5 @@ public class Assets {
       return str;
     }
 
-
-    public static int[] getRandomKakPos(){
-      Random rand = new Random();
-      int[] arr = new int[2];
-      while(true){
-        int pos1 = rand.nextInt(4);
-        int pos2 = rand.nextInt(14);
-        if(Client.kaks[pos1][pos2].wasHit() == false){
-          arr[0] = Client.kaks[pos1][pos2].xpos;
-          System.out.println(arr[0]);
-          arr[1] = Client.kaks[pos1][pos2].ypos;
-          System.out.println(arr[1]);
-          break;
-        }
-      }
-      return arr;
-    }
 }
 
