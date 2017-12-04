@@ -51,6 +51,10 @@ public class PlayerGUI extends JPanel implements Runnable{
 		this.ypos = y;
 	}
 
+	public void setName(String playerName){
+		this.name = playerName;
+	}
+
 	public String getName(){
 		return name;
 	}

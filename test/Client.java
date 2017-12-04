@@ -83,7 +83,7 @@ public class Client implements Runnable{
 		this.serverIP = serverIP;
 		this.name = name;
 		this.port = port;
-
+	
 		try{
 			socket = new DatagramSocket();
 			serverSocket = new Socket(serverIP, port);
@@ -140,8 +140,14 @@ public class Client implements Runnable{
 				
 				System.out.println("You have joined the game.");
 			} else if (connected) {
-				if (serverData.startsWith("GAME START")){
+				if (serverData.startsWith("GAMESTART")){
 					System.out.println("\nGAME START!\n");
+					String[] playerInfo = serverData.split(" ");
+					for(int i=1;i<playerInfo.length;i+=2){
+						Integer pID = Integer.parseInt(playerInfo[i].trim());
+						String name = playerInfo[i+1];
+						players[pID].setName(name);
+					}
 					CardLayout p = (CardLayout)screenDeck.getLayout();
 					p.show(screenDeck, "GAME");
 					leaderboard.requestFocus();
@@ -185,7 +191,7 @@ public class Client implements Runnable{
 				} else if (serverData.startsWith("LEADERBOARD")){
 					String[] scoreInfo = serverData.split(" ");
 					String leaderboardInfo = "LEADERBOARD:";
-					for(int i=1;i<scoreInfo.length/2;i+=2){
+					for(int i=1;i<scoreInfo.length&&scoreInfo[i]!=null;i+=2){
 						System.out.println("name:" + scoreInfo[i].trim());
 						System.out.println("score:" + scoreInfo[i+1].trim());
 						leaderboardInfo = leaderboardInfo + "\n" + scoreInfo[i].trim() + " " + scoreInfo[i+1].trim();
@@ -398,8 +404,8 @@ public class Client implements Runnable{
 		System.out.print("Adding Players: [");
 		for(int i=0;i<maxPlayers;i++){
 			System.out.print("#");
-
-			players[i] = new PlayerGUI(name, 580, 50*(i+1), i);
+			
+			players[i] = new PlayerGUI("", 580, 50*(i+1), i);
 			movementBox.add(players[i]);
 				
 			arrows[i] = new Arrow(i, -900,-900, true);

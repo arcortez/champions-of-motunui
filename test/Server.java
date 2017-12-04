@@ -125,7 +125,12 @@ public class Server extends Thread{
 					if(ready >= maxPlayers){
 						stage = ONGOING;
 						System.out.println("\nSTAGE: " + stage);
-						broadcast("GAME START");
+						String b = "GAMESTART";
+						for(int i=0;i<maxPlayers;i++){
+							b = b.trim() + " " + i + " " + players.get(i).trim();
+						}
+						System.out.println(b);
+						broadcast(b);
 					}
           			
 					break;
@@ -161,7 +166,8 @@ public class Server extends Thread{
 						broadcast(b);
 					}else if(playerData.startsWith("GAME CLEAR")){
 						for(int i=0;i<lives.length;i++){
-							scores[i][1] = scores[i][1] + (lives[i][1] *3);
+							scores[i][1] = scores[i][1] + (lives[i][1] *20);
+							System.out.println(scores[i][0] + " " + scores[i][1]);
 						}
 						Arrays.sort(scores, new Comparator<int[]>(){
 							@Override
