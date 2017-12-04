@@ -8,14 +8,16 @@ public class WinScreen extends JPanel{
 	private BufferedImage image;
 
 	public WinScreen(){
-		this.setLayout(new OverlayLayout(this));
 		this.image = Assets.winScreen;
 		
 	}
 
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
-		g.drawImage(this.image, 0,0,null);
-
+		g.drawImage(this.image, -40,0,null);
+		int len = Client.finalScores.length - 1;
+		for(int i=1;i<len;i+=2){
+			g.drawString(Client.finalScores[i]+" " + Client.finalScores[i+1], 100, 250+(15*i));
+		}
 	}
 }

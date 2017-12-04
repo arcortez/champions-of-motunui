@@ -66,6 +66,7 @@ public class Client implements Runnable{
 
 	static int playerID;
 	static int maxPlayers;
+	static String[] finalScores;
 
 	static int xpos;
 	static int ypos;
@@ -200,13 +201,16 @@ public class Client implements Runnable{
 				} else if (serverData.startsWith("GAMECLEAR")){
 					String[] info = serverData.split(" ");
 		
-					if(Integer.parseInt(info[1].trim()) == playerID){
+					if(info[1].trim().equals(name)){
 						CardLayout p = (CardLayout)screenDeck.getLayout();
 						p.show(screenDeck, "WIN");
 					}else{
 						CardLayout p = (CardLayout)screenDeck.getLayout();
 						p.show(screenDeck, "LOSE");
 					}
+
+					finalScores = info;
+					
 				} else if (serverData.startsWith("HIT")){
 					String[] player = serverData.split(" ");
 					int pID = Integer.parseInt(player[1].trim());

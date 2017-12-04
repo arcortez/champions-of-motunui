@@ -12,8 +12,8 @@ public class LeaderBoard extends JPanel {
 
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
-		g.drawImage(this.image, this.ypos, this.xpos, null);
-		g.drawString(this.name, this.ypos-this.namepos, this.xpos+65);
+		// g.drawImage(this.image, this.ypos, this.xpos, null);
+		// g.drawString(this.name, this.ypos-this.namepos, this.xpos+65);
 	}
 
 }

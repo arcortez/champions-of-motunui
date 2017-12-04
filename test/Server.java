@@ -202,13 +202,14 @@ public class Server extends Thread{
 						// 	break;
 						// }
 
-						String b = "GAMECLEAR ";
+						String b = "GAMECLEAR";
 						Iterator iter = ((Set)sortedScores.entrySet()).iterator();
 						while(iter.hasNext()){
 							Map.Entry entry = (Map.Entry)iter.next();
 							String name = players.get(entry.getKey());
 							b = b + " " + name.trim() + " " + entry.getValue();
 						}
+						System.out.println(b);
 						broadcast(b);
 					}else if(playerData.startsWith("HIT")){
 						String[] player = playerData.split(" ");
