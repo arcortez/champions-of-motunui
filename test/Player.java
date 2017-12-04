@@ -5,6 +5,7 @@ public class Player{
 	int xpos;
 	int ypos;
 	int playerid;
+	int lives;
 
 	private InetAddress address;
 	private int port;
@@ -17,7 +18,8 @@ public class Player{
 
 		this.xpos = initx;
 		this.ypos = inity;
-		this.playerid = playerid;		
+		this.playerid = playerid;
+		this.lives = 3;	
 	}
 
 	public InetAddress getAddress() {

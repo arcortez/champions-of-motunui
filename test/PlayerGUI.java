@@ -12,7 +12,7 @@ public class PlayerGUI extends JPanel implements Runnable{
 	int playerid;
 	BufferedImage image;
 
-
+	boolean isHit;
 	private String name;
 
 	public PlayerGUI(String name, int initx, int inity, int playerid){
@@ -57,6 +57,10 @@ public class PlayerGUI extends JPanel implements Runnable{
 
 	public void run(){
 		while(true) {
+			if (this.isHit == true) {
+				Client.send("HIT " + this.playerid);
+				this.isHit = false;
+			}
 			try {
 				this.repaint();
 				Thread.sleep(5);
@@ -65,6 +69,19 @@ public class PlayerGUI extends JPanel implements Runnable{
 				System.exit(1);
 			}
 		}
+	}
+
+	public boolean wasHit(){
+		return this.isHit;
+	}
+
+	public void hit(){
+		this.isHit = true;
+	}
+
+	public void hasDied(){
+		this.xpos = 1000;
+		this.ypos = 1000;
 	}
 
 	public void paintComponent(Graphics g){

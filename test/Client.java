@@ -201,6 +201,22 @@ public class Client implements Runnable{
 						CardLayout p = (CardLayout)screenDeck.getLayout();
 						p.show(screenDeck, "LOSE");
 					}
+				} else if (serverData.startsWith("HIT")){
+					String[] player = serverData.split(" ");
+					int pID = Integer.parseInt(player[1].trim());
+					int lifeCount = Integer.parseInt(player[2].trim());
+					if(pID == playerID){
+						lives.setText(lifeCount+"");
+					}
+
+				} else if (serverData.startsWith("OUT")){
+					String[] player = serverData.split(" ");
+					int pID = Integer.parseInt(player[1].trim());
+					players[pID].hasDied();
+					if(pID == playerID){
+						lives.setText("0");
+						//disable UI for the player
+					}
 				} else {
 					System.out.println(serverData.trim());
 				}

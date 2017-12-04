@@ -7,6 +7,7 @@ public class Server extends Thread{
 	static ServerSocket serverSocket;
 	static Socket[] clients;
 	static int[][] scores;
+	static int[][] lives;
 	static Map<Integer,String> players;
 	static int maxPlayers = 0;
     static DatagramSocket serverDataSocket = null;
@@ -38,6 +39,11 @@ public class Server extends Thread{
 		this.maxPlayers = num;
 		clients = new Socket[num];
 		scores = new int[num][2];
+		lives = new int[num][2];
+		for(int i=0;i<lives.length;i++){
+			lives[i][1] = 3;
+		}
+
 		System.out.print("Initializing Scores: [");
 		for(int i=0;i<num;i++){
 			scores[i][0] = i;
@@ -154,6 +160,9 @@ public class Server extends Thread{
 						}
 						broadcast(b);
 					}else if(playerData.startsWith("GAME CLEAR")){
+						for(int i=0;i<lives.length;i++){
+							scores[i][1] = scores[i][1] + (lives[i][1] *3);
+						}
 						Arrays.sort(scores, new Comparator<int[]>(){
 							@Override
 							public int compare(int[] p1, int[] p2){
@@ -163,6 +172,21 @@ public class Server extends Thread{
 							}
 						});
 						broadcast("GAMECLEAR " + scores[0][0]);
+					}else if(playerData.startsWith("HIT")){
+						String[] player = playerData.split(" ");
+						int pID = Integer.parseInt(player[1].trim());
+
+						for(int i=0;i<lives.length;i++){
+							if(i==pID){
+								lives[i][1]--;
+								if(lives[i][1] == 0){
+									broadcast("OUT " + pID);
+								} else {
+									broadcast("HIT " + pID + " " + lives[i][1]);
+								}
+								break; 
+							}
+						}
 					}else{
 						broadcast(playerData);
 					}
