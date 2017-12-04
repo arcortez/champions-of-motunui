@@ -130,7 +130,7 @@ public class Client implements Runnable{
 			}
 
 			serverData = new String(packet.getData());
-			System.out.println("serverData: " + serverData.trim());
+			System.out.println("packet: " + serverData.trim());
 			
 			if (!connected && serverData.startsWith("ID")){
 				connected = true;
@@ -148,7 +148,7 @@ public class Client implements Runnable{
 					String[] playerInfo = serverData.split(" ");
 					for(int i=1;i<playerInfo.length;i+=2){
 						Integer pID = Integer.parseInt(playerInfo[i].trim());
-						String name = playerInfo[i+1];
+						String name = playerInfo[i+1].trim();
 
 						players[pID].setName(name);
 					}
@@ -186,10 +186,6 @@ public class Client implements Runnable{
 					arrows[pID].setPos(y,x);
 					// change UI
 				} else if (serverData.startsWith("GAME OVER")){
-					try{
-						Thread.sleep(2000);
-					}catch(InterruptedException e){e.printStackTrace();}
-					
 					CardLayout p = (CardLayout)screenDeck.getLayout();
 					p.show(screenDeck, "GAMEOVER");
 				} else if (serverData.startsWith("LEADERBOARD")){
@@ -211,8 +207,6 @@ public class Client implements Runnable{
 						p.show(screenDeck, "LOSE");
 					}
 				} else if (serverData.startsWith("LIFE")){
-					finalScores = info;
-				} else if (serverData.startsWith("HIT")){
 					String[] player = serverData.split(" ");
 					int pID = Integer.parseInt(player[1].trim());
 					int lifeCount = Integer.parseInt(player[2].trim());
@@ -221,6 +215,7 @@ public class Client implements Runnable{
 					if(pID == playerID){
 						lives.setText(lifeCount+"");
 					}
+					
 				} else if (serverData.startsWith("OUT")){
 					String[] player = serverData.split(" ");
 					int pID = Integer.parseInt(player[1].trim());
@@ -231,20 +226,28 @@ public class Client implements Runnable{
 						message.requestFocus();
 						focus.setEnabled(false);
 					}
+					boolean noMorePlayersLeft = true;
+					for(int i=0;i<maxPlayers;i++){
+						if(players[i].isDead() == false){
+							noMorePlayersLeft = false;
+						}
+					}
+					if(noMorePlayersLeft){
+						send("GAME OVER");
+					}
 				} else if(serverData.startsWith("ENEMYFIRE")){
 					String[] playerData = serverData.split(" ");
 					
 					int xpos = Integer.parseInt(playerData[1].trim());
-					System.out.println(xpos);
+					// System.out.println(xpos);
 					for(int i=0;i<enemyArrowCount;i++){
 						if(enemyArrows[i].setPos(xpos, 0)){
-
 							break;
 						}
 					}
 
 				} else {
-					System.out.println(serverData.trim());
+					System.out.println("unfiltered data: "+serverData.trim());
 				}
 			}
 		}
@@ -591,7 +594,7 @@ public class Client implements Runnable{
 
 
 		}catch(ArrayIndexOutOfBoundsException e){
-            System.out.println("Usage: java GreetingClient <server ip> <port no.> <your name>");
+            System.out.println("Usage: java Client <server ip> <port no.> <your name>");
             System.exit(1);
         }catch(Exception e){
             e.printStackTrace();

@@ -85,6 +85,15 @@ public class PlayerGUI extends JPanel implements Runnable{
 	public void hasDied(){
 		this.xpos = 1000;
 		this.ypos = 1000;
+		this.isHit = true;
+	}
+
+	public boolean isDead(){
+		if(this.isHit){
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 	public void paintComponent(Graphics g){

@@ -95,7 +95,7 @@ public class Server extends Thread{
 			}
 
 			playerData = new String(packet.getData());
-			System.out.println("playerData: " + playerData.trim());
+			System.out.println("packet: " + playerData.trim());
 			switch(stage){
 				case WAITING_FOR_PLAYERS:
 					if (playerData.startsWith("JOIN")) {
@@ -214,6 +214,9 @@ public class Server extends Thread{
 						}
 						System.out.println(b);
 						broadcast(b);
+
+						arrlauncher.gameOver();
+						break;
 					}else if(playerData.startsWith("HIT")){
 						String[] player = playerData.split(" ");
 						int pID = Integer.parseInt(player[1].trim());
@@ -227,15 +230,20 @@ public class Server extends Thread{
 									System.out.println("LIFE " + pID + " " + lives[i][1]); 
 									broadcast("LIFE " + pID + " " + lives[i][1]);
 								}
+
 								try{
-									Thread.sleep(1000);
+									Thread.sleep(300);
 								}catch(InterruptedException e){}
 								
 
 								break; 
 							}
 						}
-					}else{
+					} else if(playerData.startsWith("GAME OVER")){
+						arrlauncher.gameOver();
+						broadcast("GAME OVER");
+						break;
+					} else{
 						broadcast(playerData);
 					}
 					break;

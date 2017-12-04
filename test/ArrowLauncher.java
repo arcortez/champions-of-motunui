@@ -2,12 +2,14 @@ import java.awt.*;
 import java.util.Random;
 
 public class ArrowLauncher extends Thread{
-	public ArrowLauncher(){
+	private boolean gameover;
 
+	public ArrowLauncher(){
+		this.gameover = false;
 	}
 
 	public void run(){
-		while(true){
+		while(this.gameover == false){
 			try{
 				Thread.sleep(4000);
 				Random rand = new Random();
@@ -15,5 +17,9 @@ public class ArrowLauncher extends Thread{
 				Server.broadcast("ENEMYFIRE "+pos);
 			}catch(InterruptedException e){e.printStackTrace();}
 		}
+	}
+
+	public void gameOver(){
+		this.gameover = true;
 	}
 }
